@@ -7,12 +7,15 @@ import {
 } from "../services/vehicle.service.js";
 
 import {successResponse} from "../utils/response.js";
+import buildVehicleImageUploads from "../utils/buildVehicleImageUploads.js";
 
 export const createVehicle = async (req, res, next) => {
     try {
+        const imageUrls = await buildVehicleImageUploads(req.files);
+
         const vehicle = await createVehicleService(
             req.user.id,
-            req.body
+            { ...req.body, ...imageUrls }
         );
         return successResponse(
             res,
@@ -69,10 +72,12 @@ export const getVehicleById = async (req, res, next) => {
 
 export const updateVehicle = async (req, res, next) => {
     try {
+        const imageUrls = await buildVehicleImageUploads(req.files);
+
         const vehicle = await updateVehicleService(
             req.user.id,
             req.params.id,
-            req.body
+            { ...req.body, ...imageUrls }
         );
         return successResponse(
             res,

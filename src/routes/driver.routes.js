@@ -37,6 +37,7 @@ router.get(
 router.patch(
     "/profile",
     protect,
+    authorize(ROLES.DRIVER),
     updateDriverProfileValidator,
     validate,
     updateDriverProfile

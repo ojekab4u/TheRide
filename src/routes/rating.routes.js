@@ -60,9 +60,4 @@ router.get(
     getPassengerRatings
 );
 
-router.get(
-    "/driver/:driverId",
-    getDriverRatings
-);
-
 export default router;

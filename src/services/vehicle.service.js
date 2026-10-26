@@ -154,7 +154,7 @@ export const deleteVehicleService = async (
         vehicleId
     );
 
-   await vehicle.save();
+   await vehicle.destroy();
 
-    return;
+   return;
 };

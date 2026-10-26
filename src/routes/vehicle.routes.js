@@ -5,6 +5,7 @@ import authorize from "../middlewares/role.middleware.js";
 import validate from "../middlewares/validate.middleware.js";
 
 import { ROLES } from "../constants/roles.js";
+import upload from "../middlewares/upload.middleware.js";
 
 import {
     createVehicle,
@@ -25,6 +26,15 @@ router.post(
     "/",
     protect,
     authorize(ROLES.DRIVER),
+
+    upload.fields([
+        { name: "frontImage", maxCount: 1 },
+        { name: "rearImage", maxCount: 1 },
+        { name: "leftImage", maxCount: 1 },
+        { name: "rightImage", maxCount: 1 },
+        { name: "interiorImage", maxCount: 1 },
+    ]),
+
     createVehicleValidator,
     validate,
     createVehicle
@@ -48,6 +58,15 @@ router.patch(
     "/:id",
     protect,
     authorize(ROLES.DRIVER),
+
+    upload.fields([
+        { name: "frontImage", maxCount: 1 },
+        { name: "rearImage", maxCount: 1 },
+        { name: "leftImage", maxCount: 1 },
+        { name: "rightImage", maxCount: 1 },
+        { name: "interiorImage", maxCount: 1 },
+    ]),
+
     updateVehicleValidator,
     validate,
     updateVehicle

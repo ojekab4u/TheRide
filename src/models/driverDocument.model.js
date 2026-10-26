@@ -18,7 +18,7 @@ const DriverDocument = sequelize.define(
 
         nationalIdUrl: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
 
         driverLicenseUrl: {

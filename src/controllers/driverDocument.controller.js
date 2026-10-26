@@ -7,6 +7,7 @@ import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import buildDriverDocumentUploads from "../utils/buildDriverDocumentUploads.js";
 import { extractNameFromLicense } from "../services/ocr.service.js";
 import User from "../models/user.model.js";
+import AppError from "../utils/AppError.js";
 
 import { successResponse } from "../utils/response.js";
 
@@ -17,6 +18,25 @@ export const uploadDriverDocuments = async (
     next
 ) => {
     try {
+
+        // Required document images (form-data file fields)
+        const requiredFiles = [
+            "driverLicense",
+            "vehicleRegistration",
+            "insuranceCertificate",
+            "selfie",
+        ];
+
+        const missingFiles = requiredFiles.filter(
+            (field) => !req.files?.[field]?.[0]
+        );
+
+        if (missingFiles.length > 0) {
+            throw new AppError(
+                `Missing documents: ${missingFiles.join(", ")} — kindly upload clear and accepted files`,
+                400
+            );
+        }
 
         const documentData =
             await buildDriverDocumentUploads(req.files);
@@ -30,8 +50,10 @@ export const uploadDriverDocuments = async (
             );
         }
 
-        if (!resolvedName && req.body.fullName) {
-            const fullName = req.body.fullName.trim();
+        const body = req.body || {};
+
+        if (!resolvedName && typeof body.fullName === "string" && body.fullName.trim()) {
+            const fullName = body.fullName.trim();
             const parts = fullName.split(/\s+/);
 
             resolvedName = {
@@ -106,6 +128,20 @@ export const updateDriverDocuments = async (
     next
 ) => {
     try {
+
+        // At least one new document image is required
+        const providedCount = Object
+            .values(req.files || {})
+            .flat()
+            .filter(Boolean)
+            .length;
+
+        if (providedCount === 0) {
+            throw new AppError(
+                "Upload at least one document image (e.g. driverLicense, selfie) as form-data file fields.",
+                400
+            );
+        }
 
         const documentData =
             await buildDriverDocumentUploads(req.files);
