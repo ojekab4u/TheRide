@@ -35,28 +35,49 @@ export const reviewDriverProfileService = async (
     profile.verificationStatus = status;
 
     if (status === "REJECTED") {
-
         profile.rejectionReason = reason;
-
-        profile.profileCompleted = false;
-
     } else {
-
         profile.rejectionReason = null;
-
         profile.profileCompleted = true;
-
     }
 
     await profile.save();
 
+    // Keep the document record in sync — onboarding-status reads it
+    const document = await DriverDocument.findOne({
+        where: { driverId: profile.id },
+    });
+
+    if (document) {
+        document.verificationStatus = status;
+        document.verificationNote =
+            status === "APPROVED" ? null : reason;
+        document.verifiedAt =
+            status === "APPROVED" ? new Date() : null;
+        await document.save();
+    }
+
+    // Verify the user account itself so other flows see approval
+    const driverUser = await User.findByPk(profile.userId);
+
+    if (driverUser) {
+        driverUser.isVerified = status === "APPROVED";
+        await driverUser.save();
+    }
+
     await createNotification({
-    userId: driver.userId,
-    title: "Driver Approved",
-    message: "Your driver profile has been approved.",
-    type: "SYSTEM",
-    referenceId: driver.id,
-});
+        userId: profile.userId,
+        title:
+            status === "APPROVED"
+                ? "Driver Documents Approved"
+                : "Driver Documents Rejected",
+        message:
+            status === "APPROVED"
+                ? "Your driver documents have been approved."
+                : reason,
+        type: "SYSTEM",
+        referenceId: profile.id,
+    });
 
     return profile;
 
@@ -525,14 +546,6 @@ export const reviewCorporateProfileService = async (
 
     await document.save();
     await corporate.save();
-    await createNotification({
-   
-    userId: user.id,
-    title: "Corporate Profile Rejected",
-    message: reason,
-    type: "CORPORATE",
-    referenceId: corporate.id,
-});
 
     const user = await User.findByPk(
         corporate.userId
@@ -544,13 +557,18 @@ export const reviewCorporateProfileService = async (
             status === "APPROVED";
 
         await user.save();
+
         await createNotification({
-        userId: user.id,
-        title: "Corporate Profile Approved",
-        message: "Your corporate profile has been approved.",
-        type: "CORPORATE",
-        referenceId: corporate.id,
-    });
+            userId: user.id,
+            title: status === "APPROVED"
+                ? "Corporate Profile Approved"
+                : "Corporate Profile Rejected",
+            message: status === "APPROVED"
+                ? "Your corporate profile has been approved."
+                : reason,
+            type: "CORPORATE",
+            referenceId: corporate.id,
+        });
 
     }
 

@@ -18,6 +18,7 @@ import CorporateProfile from "../models/corporateProfile.model.js";
 import DriverProfile from "../models/driver.model.js";
 import DriverDocument from "../models/driverDocument.model.js";
 import PassengerProfile from "../models/passengerProfile.model.js";
+import Vehicle from "../models/vehicle.model.js";
 
 export const registerUser = async (userData) => {
     const {
@@ -484,7 +485,18 @@ export const getOnboardingStatusService = async (userId) => {
         } else if (documents.verificationStatus === "REJECTED") {
             status.nextStep = "REUPLOAD_DOCUMENTS";
         } else {
-            status.nextStep = "DASHBOARD";
+            // Documents approved — driver still needs an approved
+            // vehicle before the dashboard (rides require one)
+            const approvedVehicle = await Vehicle.findOne({
+                where: {
+                    driverId: driverProfile.id,
+                    verificationStatus: "APPROVED",
+                },
+            });
+
+            status.nextStep = approvedVehicle
+                ? "DASHBOARD"
+                : "ADD_VEHICLE";
         }
 
         return status;

@@ -81,10 +81,16 @@ export const updateDriverDocumentsService = async (
         userId
     );
 
-    // Drivers should not update verification fields
+    // Drivers should not set verification fields directly
     delete documentData.verificationStatus;
     delete documentData.verifiedAt;
     delete documentData.verificationNote;
+    delete documentData.rejectionReason;
+
+    // Re-submission goes back to PENDING for admin review
+    documentData.verificationStatus = "PENDING";
+    documentData.verifiedAt = null;
+    documentData.verificationNote = null;
 
     await documents.update(documentData);
 
