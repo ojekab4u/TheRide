@@ -12,18 +12,18 @@ const DriverProfile = sequelize.define(
 
         licenseNumber: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
             unique: true,
         },
 
         licenseExpiry: {
             type: DataTypes.DATEONLY,
-            allowNull: false,
+            allowNull: true,
         },
 
         yearsOfExperience: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            allowNull: true,
         },
 
         preferredVehicleType: {

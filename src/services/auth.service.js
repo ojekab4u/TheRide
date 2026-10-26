@@ -105,6 +105,22 @@ export const registerUser = async (userData) => {
         balance: 0,
     });
 
+    // Create the role profile immediately so profile/dashboard
+    // endpoints return data (they used to 404 until completion)
+    if (userRole === ROLES.DRIVER) {
+        await DriverProfile.create({
+            userId: user.id,
+            profileCompleted: false,
+        });
+    }
+
+    if (userRole === ROLES.PASSENGER) {
+        await PassengerProfile.create({
+            userId: user.id,
+            profileCompleted: false,
+        });
+    }
+
     // Generate Driver ID for drivers
     if (userRole === ROLES.DRIVER) {
         let driverId;
@@ -459,7 +475,7 @@ export const getOnboardingStatusService = async (userId) => {
         status.verificationStatus =
             documents?.verificationStatus || null;
 
-        if (!driverProfile) {
+        if (!driverProfile || !driverProfile.profileCompleted) {
             status.nextStep = "COMPLETE_PROFILE";
         } else if (!documents) {
             status.nextStep = "UPLOAD_DOCUMENTS";
@@ -483,7 +499,7 @@ export const getOnboardingStatusService = async (userId) => {
             passengerProfile?.profileCompleted
         );
 
-        status.nextStep = passengerProfile
+        status.nextStep = passengerProfile?.profileCompleted
             ? "DASHBOARD"
             : "COMPLETE_PROFILE";
 

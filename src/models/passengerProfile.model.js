@@ -16,12 +16,12 @@ const PassengerProfile = sequelize.define(
                 "FEMALE",
                 "OTHER"
             ),
-            allowNull: false,
+            allowNull: true,
         },
 
         dateOfBirth: {
             type: DataTypes.DATEONLY,
-            allowNull: false,
+            allowNull: true,
         },
 
         occupation: {
@@ -31,7 +31,7 @@ const PassengerProfile = sequelize.define(
 
         homeLocation: {
             type: DataTypes.STRING,
-            allowNull: false,
+            allowNull: true,
         },
 
         officeLocation: {

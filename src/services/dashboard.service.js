@@ -45,19 +45,12 @@ export const getDriverDashboardService = async (userId) => {
         where: { userId },
     });
 
-    // Vehicle
+    // Vehicle (may not be registered yet during onboarding)
     const vehicle = await Vehicle.findOne({
         where: {
             driverId: driver.id,
         },
     });
-
-    if (!vehicle) {
-        throw new AppError(
-            "Vehicle not found.",
-            404
-        );
-    }
 
     // Date Range
     const todayStart = new Date();
@@ -91,11 +84,13 @@ export const getDriverDashboardService = async (userId) => {
         }) || 0;
 
     // Driver Rides
-    const rides = await Ride.findAll({
-        where: {
-            vehicleId: vehicle.id,
-        },
-    });
+    const rides = vehicle
+        ? await Ride.findAll({
+              where: {
+                  vehicleId: vehicle.id,
+              },
+          })
+        : [];
 
     const rideIds = rides.map(
         ride => ride.id
@@ -165,38 +160,40 @@ const averageDriverRating =
         : 0;
 
     // Active Ride
-    const activeRide =
-        await Ride.findOne({
-            where: {
-                vehicleId: vehicle.id,
-                status: "ONGOING",
-            },
-            include: [
-                {
-                    model: Booking,
-                    where: {
-                        bookingStatus: "ACCEPTED",
-                    },
-                    required: false,
-                },
-            ],
-        });
+    const activeRide = vehicle
+        ? await Ride.findOne({
+              where: {
+                  vehicleId: vehicle.id,
+                  status: "ONGOING",
+              },
+              include: [
+                  {
+                      model: Booking,
+                      where: {
+                          bookingStatus: "ACCEPTED",
+                      },
+                      required: false,
+                  },
+              ],
+          })
+        : null;
 
     // Upcoming Rides
-    const upcomingRides =
-        await Ride.findAll({
-            where: {
-                vehicleId: vehicle.id,
-                status: "SCHEDULED",
-            },
-            limit: 5,
-            order: [
-                [
-                    "departureTime",
-                    "ASC",
-                ],
-            ],
-        });
+    const upcomingRides = vehicle
+        ? await Ride.findAll({
+              where: {
+                  vehicleId: vehicle.id,
+                  status: "SCHEDULED",
+              },
+              limit: 5,
+              order: [
+                  [
+                      "departureTime",
+                      "ASC",
+                  ],
+              ],
+          })
+        : [];
 
     // Recent Booking Requests
     const newBookingRequests =
@@ -268,6 +265,8 @@ const averageDriverRating =
             rating: averageDriverRating,
 
         },
+
+        vehicle: vehicle || null,
 
         wallet: {
 

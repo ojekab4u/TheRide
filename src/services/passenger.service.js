@@ -22,11 +22,24 @@ export const createPassengerProfileService = async (
             where: { userId },
         });
 
+    // Profile row is auto-created at registration, so this
+    // step completes/updates it instead of creating a second one.
     if (existingProfile) {
-        throw new AppError(
-            "Passenger profile already exists.",
-            400
-        );
+        const {
+            createdAt,
+            updatedAt,
+            id,
+            userId: ignoredUserId,
+            profileCompleted,
+            ...allowedUpdates
+        } = profileData;
+
+        await existingProfile.update({
+            ...allowedUpdates,
+            profileCompleted: true,
+        });
+
+        return existingProfile;
     }
 
     const profile = await PassengerProfile.create({

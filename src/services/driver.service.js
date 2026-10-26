@@ -28,26 +28,23 @@ export const createDriverProfileService = async (
         );
     }
 
-    // One profile per user
+    // Profile row is auto-created at registration, so this
+    // step completes/updates it instead of creating a second one.
     const existingProfile = await DriverProfile.findOne({
         where: { userId },
     });
 
-    if (existingProfile) {
-        throw new AppError(
-            "Driver profile already exists.",
-            400
-        );
-    }
-
-    // Check duplicate licence number BEFORE inserting
+    // Check duplicate licence number BEFORE saving
     const existingLicense = await DriverProfile.findOne({
         where: {
             licenseNumber: userData.licenseNumber,
         },
     });
 
-    if (existingLicense) {
+    if (
+        existingLicense &&
+        existingLicense.userId !== userId
+    ) {
         throw new AppError(
             "This driver's license number is already registered.",
             409
@@ -56,11 +53,31 @@ export const createDriverProfileService = async (
 
     try {
 
+        if (existingProfile) {
+            const {
+                verificationStatus,
+                rejectionReason,
+                profileCompleted,
+                createdAt,
+                updatedAt,
+                id,
+                userId: ignoredUserId,
+                ...allowedUpdates
+            } = userData;
+
+            await existingProfile.update({
+                ...allowedUpdates,
+                profileCompleted: true,
+            });
+
+            return existingProfile;
+        }
+
         const driverProfile =
             await DriverProfile.create({
                 ...userData,
                 userId,
-                profileCompleted: false,
+                profileCompleted: true,
             });
 
         return driverProfile;

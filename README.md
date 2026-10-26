@@ -1,6 +1,6 @@
 # EcoRide Backend API
 
-## Group 6 Capstone Project
+
 
 ## Project Overview
 
@@ -318,7 +318,7 @@ The API was tested using Postman. All endpoints were validated for authenticatio
 
 ## Contributors
 
-Group 6 Capstone Team
+Ojetunde Kabir Olatunde
 
 ---
 

@@ -43,8 +43,9 @@ export const sendEmailOTPService = async (email, phoneNumber) => {
         );
     }
 
-    // Send SMS if phone number provided
-    if (phoneNumber) {
+    // Send SMS only when enabled (phone verification is pending
+    // Termii sender-ID approval — email is the only channel for now)
+    if (phoneNumber && process.env.ENABLE_SMS_OTP === "true") {
         try {
             await sendSMS(phoneNumber, `Your EcoRide verification code is: ${code}`);
         } catch (error) {

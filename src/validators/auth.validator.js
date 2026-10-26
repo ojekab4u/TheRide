@@ -28,10 +28,28 @@ export const registerValidator = [
     .withMessage("Please provide a valid email."),
 
   body("phoneNumber")
-    .optional({ nullable: true, checkFalsy: true })
     .trim()
-    .matches(/^(\+234|0)[789][01]\d{8}$/)
-    .withMessage("Invalid Nigerian phone number."),
+    .custom((value, { req }) => {
+      const isCorporate =
+        Boolean(req.body.companyName) &&
+        Boolean(req.body.rcNumber);
+
+      if (!value) {
+        if (isCorporate) {
+          return true; // corporate: phone optional for now
+        }
+
+        throw new Error(
+          "Phone number is required for drivers and passengers."
+        );
+      }
+
+      if (!/^(\+234|0)[789][01]\d{8}$/.test(value)) {
+        throw new Error("Invalid Nigerian phone number.");
+      }
+
+      return true;
+    }),
 
   body("role")
     .optional()
