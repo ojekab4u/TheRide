@@ -2,13 +2,15 @@ import express from "express";
 import { authenticate } from "../middlewares/auth.middleware.js";
 
 import {
-register,
-login,
-logout,
-changeUserPassword,
-forgotPassword,
-resetPassword,
-getOnboardingStatus,
+    register,
+    login,
+    logout,
+    changeUserPassword,
+    forgotPassword,
+    resetPassword,
+    resetPasswordByCode,
+    verifyResetCode,
+    getOnboardingStatus,
 } from "../controllers/auth.controller.js";
 
 import {
@@ -16,7 +18,9 @@ import {
   loginValidator,
   changePasswordValidator,
   forgotPasswordValidator,
-  resetPasswordValidator
+  resetPasswordValidator,
+  resetPasswordByCodeValidator,
+  verifyResetCodeValidator
 } from "../validators/auth.validator.js";
 
 import { selectRoleService } from "../services/selectRole.service.js";
@@ -81,6 +85,22 @@ router.post(
     forgotPasswordValidator,
     validate,
     forgotPassword
+);
+
+router.post(
+    "/verify-reset-code",
+    normalizeFields,
+    verifyResetCodeValidator,
+    validate,
+    verifyResetCode
+);
+
+router.post(
+    "/reset-password",
+    normalizeFields,
+    resetPasswordByCodeValidator,
+    validate,
+    resetPasswordByCode
 );
 
 router.post(

@@ -1,7 +1,7 @@
 import { registerUser, loginUser, changePassword, getOnboardingStatusService } from "../services/auth.service.js";
 import { successResponse } from "../utils/response.js";
 import { MESSAGES } from "../constants/messages.js";
-import {forgotPasswordService, resetPasswordService,}  from "../services/auth.service.js"
+import {forgotPasswordService, resetPasswordService, resetPasswordWithCodeService, verifyResetCodeService,}  from "../services/auth.service.js"
 import resolveFrontendUrl from "../utils/resolveFrontendUrl.js";
 export const register = async (req, res, next) => {
   try {
@@ -89,6 +89,55 @@ export const resetPassword = async (
             res,
             200,
             MESSAGES.RESET_PASSWORD_SUCCESS
+        );
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+};
+
+export const resetPasswordByCode = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        await resetPasswordWithCodeService(req.body);
+
+        return successResponse(
+            res,
+            200,
+            MESSAGES.RESET_PASSWORD_SUCCESS
+        );
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+};
+
+export const verifyResetCode = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const resetToken = await verifyResetCodeService(req.body);
+
+        return successResponse(
+            res,
+            200,
+            "Reset code verified.",
+            { resetToken }
         );
 
     } catch (error) {

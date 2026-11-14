@@ -183,3 +183,67 @@ export const verifyPhoneOTPService = async (
     await otp.destroy();
     return user;
 };
+
+export const sendPasswordResetCodeService = async (email) => {
+    const user = await User.findOne({
+        where: { email },
+    });
+
+    if (!user) {
+        return null;
+    }
+
+    await OTP.destroy({
+        where: {
+            userId: user.id,
+            purpose: "PASSWORD_RESET",
+        },
+    });
+
+    const code = generateOTP();
+
+    await OTP.create({
+        userId: user.id,
+        code,
+        purpose: "PASSWORD_RESET",
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    });
+
+    return code;
+};
+
+// Validates and consumes a password-reset code; returns the user
+export const verifyPasswordResetCodeService = async (
+    email,
+    code
+) => {
+    const user = await User.findOne({
+        where: { email },
+    });
+
+    if (!user) {
+        throw new AppError("User not found.", 404);
+    }
+
+    const otp = await OTP.findOne({
+        where: {
+            userId: user.id,
+            code,
+            purpose: "PASSWORD_RESET",
+        },
+    });
+
+    if (!otp) {
+        throw new AppError("Invalid reset code.", 400);
+    }
+
+    if (otp.expiresAt < new Date()) {
+        await otp.destroy();
+        throw new AppError("Reset code has expired.", 400);
+    }
+
+    // Consume the code so it can't be reused
+    await otp.destroy();
+
+    return user;
+};

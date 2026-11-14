@@ -10,6 +10,11 @@ const OTP = sequelize.define(
             primaryKey: true,
         },
 
+        userId: {
+            type: DataTypes.UUID,
+            allowNull: true,
+        },
+
         code: {
             type: DataTypes.STRING,
             allowNull: false,

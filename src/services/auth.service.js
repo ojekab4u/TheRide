@@ -10,8 +10,9 @@ import { generateToken } from "../utils/generateToken.js";
 import { sendResetEmail } from "./email.service.js";
 import { sendSMS } from "./sms.service.js";
 import { selectRole } from "../controllers/selectRole.controller.js";
-import {sendEmailOTPService,} from "./otp.service.js";
+import { sendEmailOTPService, sendPasswordResetCodeService, verifyPasswordResetCodeService } from "./otp.service.js";
 import { ROLES } from "../constants/roles.js";
+import OTP from "../models/otp.model.js";
 import Wallet from "../models/wallet.model.js";
 import generateDriverId from "../utils/generateDriverId.js";
 import CorporateProfile from "../models/corporateProfile.model.js";
@@ -365,15 +366,23 @@ export const forgotPasswordService = async ({
 
     await user.save();
 
-    // The reset link always goes to email (more reliable for links)
-    await sendResetEmail(user.email, resetToken, frontendUrl);
+    // Corporate/platform get the web link; drivers/passengers get the code
+    const linkOnly =
+        user.role === ROLES.CORPORATE_ADMIN ||
+        user.role === ROLES.PLATFORM_ADMIN;
+
+    const resetCode = linkOnly
+        ? null
+        : await sendPasswordResetCodeService(user.email);
+
+    await sendResetEmail(user.email, resetToken, frontendUrl, resetCode, linkOnly);
 
     // Optional SMS notification (never fails the request)
     if (user.phoneNumber) {
         try {
             await sendSMS(
                 user.phoneNumber,
-                "A password reset link has been sent to your email."
+                "A password reset code has been sent to your email."
             );
         } catch (error) {
             console.error("RESET SMS ERROR:", error.message);
@@ -436,6 +445,73 @@ export const resetPasswordService = async (
 
 };
 
+// Mobile flow: reset with the 4-digit code emailed to the user
+export const resetPasswordWithCodeService = async ({
+    email,
+    code,
+    newPassword,
+}) => {
+
+    const user = await User.findOne({
+        where: { email },
+    });
+
+    if (!user) {
+        throw new AppError(MESSAGES.USER_NOT_FOUND, 404);
+    }
+
+    const otp = await OTP.findOne({
+        where: {
+            userId: user.id,
+            code,
+            purpose: "PASSWORD_RESET",
+        },
+    });
+
+    if (!otp) {
+        throw new AppError("Invalid reset code.", 400);
+    }
+
+    if (otp.expiresAt < new Date()) {
+        await otp.destroy();
+        throw new AppError("Reset code has expired.", 400);
+    }
+
+    // Hash the new password
+    user.password = await hashPassword(newPassword);
+
+    // Clear token-based reset fields (if a link was also issued)
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+
+    // Force old JWTs to become invalid
+    user.passwordChangedAt = new Date();
+
+    await user.save();
+
+    await otp.destroy();
+};
+
+// Mobile flow step 2: verify the emailed code — consumes the code
+// and issues a short-lived reset token for the "Enter New Password" screen
+export const verifyResetCodeService = async ({
+    email,
+    code,
+}) => {
+    const user = await verifyPasswordResetCodeService(email, code);
+
+    const { resetToken, hashedToken } = generateResetToken();
+
+    user.passwordResetToken = hashedToken;
+    user.passwordResetExpires = new Date(
+        Date.now() + 15 * 60 * 1000
+    );
+
+    await user.save();
+
+    return resetToken;
+};
+
 export const getOnboardingStatusService = async (userId) => {
     const user = await User.findByPk(userId);
 
@@ -476,9 +552,9 @@ export const getOnboardingStatusService = async (userId) => {
         status.verificationStatus =
             documents?.verificationStatus || null;
 
-        if (!driverProfile || !driverProfile.profileCompleted) {
-            status.nextStep = "COMPLETE_PROFILE";
-        } else if (!documents) {
+        // "Driving information" screen removed from the design —
+        // license details will be extracted from the uploaded documents
+        if (!documents) {
             status.nextStep = "UPLOAD_DOCUMENTS";
         } else if (documents.verificationStatus === "PENDING") {
             status.nextStep = "AWAIT_VERIFICATION";

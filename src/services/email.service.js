@@ -67,7 +67,9 @@ export const sendOTPEmail = async (email, otp) => {
 export const sendResetEmail = async (
     email,
     resetToken,
-    frontendUrl
+    frontendUrl,
+    resetCode,
+    linkOnly = false
 ) => {
     try {
         const baseUrl =
@@ -79,21 +81,31 @@ export const sendResetEmail = async (
             `${baseUrl}` +
             `/ResetPassword.html?token=${resetToken}`;
 
-        const emailParams = new EmailParams()
-            .setFrom(
-                new Sender(FROM_EMAIL, FROM_NAME)
-            )
-            .setTo([
-                new Recipient(email)
-            ])
-            .setSubject("Reset Your EcoRide Password")
-            .setHtml(`
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-                    <h2>Reset Password</h2>
+        // Corporate/platform: link only.
+        // Drivers/passengers: code only (no link to a web page).
+        const codeBlock = linkOnly
+            ? ""
+            : `
+                    <p>
+                        Enter this code in the app to reset
+                        your password:
+                    </p>
+
+                    <h1 style="letter-spacing: 8px; text-align: center;">
+                        ${resetCode || "------"}
+                    </h1>
 
                     <p>
+                        This code expires in
+                        <strong>10 minutes</strong>.
+                    </p>
+            `;
+
+        const linkBlock = linkOnly
+            ? `
+                    <p>
                         Click the button below to reset
-                        your EcoRide password.
+                        your password:
                     </p>
 
                     <a
@@ -114,7 +126,22 @@ export const sendResetEmail = async (
                         This link expires in
                         <strong>15 minutes</strong>.
                     </p>
+            `
+            : "";
 
+        const emailParams = new EmailParams()
+            .setFrom(
+                new Sender(FROM_EMAIL, FROM_NAME)
+            )
+            .setTo([
+                new Recipient(email)
+            ])
+            .setSubject("Reset Your EcoRide Password")
+            .setHtml(`
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+                    <h2>Reset Password</h2>
+                    ${codeBlock}
+                    ${linkBlock}
                     <p>
                         If you did not request a password reset,
                         you can ignore this email.

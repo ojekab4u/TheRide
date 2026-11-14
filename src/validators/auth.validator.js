@@ -223,3 +223,54 @@ export const resetPasswordValidator = [
         }),
 
 ];
+
+export const resetPasswordByCodeValidator = [
+
+    body("email")
+        .trim()
+        .normalizeEmail()
+        .isEmail()
+        .withMessage("Please provide a valid email address."),
+
+    body("code")
+        .trim()
+        .matches(/^\d{4}$/)
+        .withMessage("Reset code must be 4 digits."),
+
+    body("newPassword")
+        .notEmpty()
+        .withMessage("New password is required.")
+
+        .isLength({ min: 8 })
+        .withMessage("Password must be at least 8 characters long."),
+
+    body("confirmPassword")
+        .notEmpty()
+        .withMessage("Confirm password is required.")
+
+        .custom((value, { req }) => {
+
+            if (value !== req.body.newPassword) {
+                throw new Error("Passwords do not match.");
+            }
+
+            return true;
+
+        }),
+
+];
+
+export const verifyResetCodeValidator = [
+
+    body("email")
+        .trim()
+        .normalizeEmail()
+        .isEmail()
+        .withMessage("Please provide a valid email address."),
+
+    body("code")
+        .trim()
+        .matches(/^\d{4}$/)
+        .withMessage("Reset code must be 4 digits."),
+
+];
