@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TheRide — Passenger API Reference</title>
+<style>
+    :root { --ink:#1a1a2e; --muted:#5a5a72; --accent:#0f6b3f; --accent-light:#e6f4ec; --border:#d9d9e3; --code-bg:#f5f6fa; --warn-bg:#fff7e6; --warn-border:#e0a800; }
+    * { box-sizing: border-box; }
+    body { font-family:"Segoe UI", Arial, sans-serif; color:var(--ink); margin:0; font-size:10.5pt; line-height:1.5; }
+    .page { max-width:800px; margin:0 auto; padding:40px 48px; }
+    .doc-header { border-bottom:3px solid var(--accent); padding-bottom:14px; margin-bottom:22px; }
+    .doc-header h1 { margin:0; font-size:20pt; color:var(--accent); }
+    .doc-header .meta { margin-top:6px; color:var(--muted); font-size:9.5pt; }
+    .doc-header .meta strong { color:var(--ink); }
+    h2 { font-size:13pt; color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:4px; margin:26px 0 10px; break-after:avoid; }
+    h3 { font-size:11pt; margin:18px 0 6px; break-after:avoid; }
+    h3 .method { font-family:Consolas, monospace; font-size:9pt; font-weight:bold; color:#fff; background:var(--accent); padding:1px 7px; border-radius:3px; margin-right:6px; }
+    h3 .method.get { background:#1a6fb5; } h3 .method.patch { background:#8a5a00; } h3 .method.del { background:#a03030; }
+    h3 .lock { font-size:8.5pt; color:var(--muted); font-weight:normal; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    th, td { border:1px solid var(--border); padding:5px 9px; text-align:left; vertical-align:top; }
+    th { background:var(--accent-light); color:var(--accent); font-weight:600; }
+    code { font-family:Consolas,"Courier New",monospace; background:var(--code-bg); padding:1px 4px; border-radius:3px; font-size:9pt; }
+    pre { background:var(--code-bg); border:1px solid var(--border); border-radius:5px; padding:10px 12px; font-family:Consolas,"Courier New",monospace; font-size:8.8pt; line-height:1.45; white-space:pre-wrap; word-break:break-word; margin:6px 0 12px; break-inside:avoid; }
+    .note { background:var(--accent-light); border-left:4px solid var(--accent); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    .warn { background:var(--warn-bg); border-left:4px solid var(--warn-border); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    ul { margin:4px 0 10px; padding-left:20px; } li { margin:2px 0; }
+    .footer { margin-top:30px; padding-top:10px; border-top:1px solid var(--border); color:var(--muted); font-size:8.5pt; }
+    @media print { body { font-size:10pt; } .page { padding:0; max-width:none; } h2 { break-after:avoid; } pre, table, .note, .warn { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="doc-header">
+    <h1>TheRide — Passenger API Reference</h1>
+    <div class="meta">
+        <strong>Base URL:</strong> <code>http://localhost:3000/api/v1</code> &nbsp;·&nbsp;
+        <strong>Auth:</strong> <code>Authorization: Bearer &lt;token&gt;</code> &nbsp;·&nbsp;
+        <strong>Version:</strong> Nov 14, 2026
+    </div>
+</div>
+
+<h2>Journey order</h2>
+<pre>Register → Verify email → Login → Onboarding-status (drives every screen)
+→ Complete profile → Dashboard → Bookings / Trips / Wallet / Ratings</pre>
+
+<p><strong><code>GET /auth/onboarding-status</code> — <code>nextStep</code> values for passengers:</strong></p>
+<table>
+    <tr><th style="width:30%">nextStep</th><th>Meaning</th></tr>
+    <tr><td><code>VERIFY_EMAIL</code></td><td>Enter the emailed code</td></tr>
+    <tr><td><code>COMPLETE_PROFILE</code></td><td><code>POST /passengers/profile</code> has not been called yet</td></tr>
+    <tr><td><code>DASHBOARD</code></td><td>Profile completed — go to dashboard</td></tr>
+</table>
+
+<h2>1. Auth</h2>
+<p>Same endpoints as the driver flow. Differences only:</p>
+<ul>
+    <li><code>role</code> is <code>"PASSENGER"</code>; <code>phoneNumber</code> is required; names optional.</li>
+    <li>No <code>driverId</code> — login with <code>identifier</code> (email or phone).</li>
+    <li>Password reset email contains the <strong>4-digit code only</strong> (no web link).</li>
+</ul>
+
+<h3><span class="method">POST</span>/auth/register</h3>
+<pre>{
+  "firstName": "Ada", "lastName": "Nwosu",   // optional; fullName accepted
+  "email": "ada@example.com",
+  "phoneNumber": "08181234567",
+  "password": "Passw0rd!",
+  "confirmPassword": "Passw0rd!",
+  "role": "PASSENGER"
+}</pre>
+<pre>{
+  "success": true,
+  "message": "Registration successful. Please verify your email.",
+  "email": "ada@example.com",
+  "role": "PASSENGER",
+  "firstName": "Ada",
+  "lastName": "Nwosu"
+}</pre>
+
+<h3><span class="method">POST</span>/otp/verify-email</h3>
+<pre>{ "email": "ada@example.com", "code": "4821" }</pre>
+<p>Resend: <code>POST /otp/resend-email</code> <code>{ "email": "…" }</code></p>
+
+<h3><span class="method">POST</span>/auth/login</h3>
+<pre>{ "identifier": "ada@example.com", "password": "Passw0rd!" }</pre>
+<pre>{
+  "success": true,
+  "message": "Login successful.",
+  "token": "eyJhbGciOi…",
+  "user": {
+    "id": "4b1e…",
+    "email": "ada@example.com",
+    "phoneNumber": "08181234567",
+    "role": "PASSENGER",
+    "profilePicture": null,
+    "emailVerified": true,
+    "phoneVerified": false,
+    "isVerified": false,
+    "status": "ACTIVE",
+    "lastLogin": "2026-11-14T09:12:44.000Z",
+    "firstName": "Ada",
+    "lastName": "Nwosu"
+  }
+}</pre>
+
+<h3>Password reset — mobile flow</h3>
+<pre>POST /auth/forgot-password      { "email": "ada@example.com" }
+POST /auth/verify-reset-code    { "email": "ada@example.com", "code": "1550" }
+                                → { "data": { "resetToken": "9f2c…" } }
+POST /auth/reset-password/9f2c… { "newPassword": "N3wPassw0rd!", "confirmPassword": "N3wPassw0rd!" }</pre>
+<p>The code is consumed at the verify step; the app holds <code>resetToken</code> in memory for the final call.</p>
+
+<h3>Other auth endpoints</h3>
+<table>
+    <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>GET /auth/onboarding-status</code> 🔐</td><td>See table above</td></tr>
+    <tr><td><code>PATCH /auth/change-password</code> 🔐</td><td><code>{ "currentPassword": "…", "newPassword": "…" }</code></td></tr>
+    <tr><td><code>POST /auth/logout</code> 🔐</td><td>No body</td></tr>
+</table>
+
+<h2>2. Passenger profile</h2>
+
+<h3><span class="method">POST</span>/passengers/profile <span class="lock">🔐 PASSENGER — completes onboarding</span></h3>
+<pre>{
+  "gender": "FEMALE",              // MALE | FEMALE | OTHER — required
+  "dateOfBirth": "1998-04-12",     // required, ISO date
+  "homeLocation": "12 Awolowo Rd, Ikoyi, Lagos",   // required
+  "occupation": "Designer",        // optional
+  "officeLocation": "Eko Atlantic, Lagos"          // optional
+}</pre>
+<pre>{ "success": true, "message": "Passenger profile saved successfully.", "data": { "…": "…" } }</pre>
+<p>Calling this sets <code>profileCompleted</code> — onboarding-status then returns <code>DASHBOARD</code>.</p>
+
+<h3><span class="method get">GET</span>/passengers/profile &nbsp;·&nbsp; <span class="method patch">PATCH</span>/passengers/profile <span class="lock">🔐</span></h3>
+<p>All fields optional on PATCH.</p>
+
+<h3><span class="method">POST</span>/passengers/emergency-contact <span class="lock">🔐</span></h3>
+<pre>{ "fullName": "Chidi Nwosu", "phoneNumber": "08099998888", "relationship": "Brother" }</pre>
+
+<h2>3. Passenger documents <span class="lock">— multipart/form-data</span></h2>
+<table>
+    <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>POST /passenger-documents</code> 🔐</td><td>File fields: <code>nationalIdFront</code>, <code>nationalIdBack</code>, <code>selfie</code></td></tr>
+    <tr><td><code>GET /passenger-documents</code> 🔐</td><td>Retrieve uploaded document URLs</td></tr>
+    <tr><td><code>PATCH /passenger-documents</code> 🔐</td><td>Re-upload; any of the file fields</td></tr>
+</table>
+<div class="warn">Passenger document review is not part of the current flow — no admin screen consumes these yet. Uploads are stored but nothing gates on them.</div>
+
+<h2>4. Dashboard</h2>
+<h3><span class="method get">GET</span>/dashboard/passenger <span class="lock">🔐 PASSENGER</span></h3>
+<pre>{ "success": true, "message": "Passenger dashboard retrieved successfully.", "data": { "…": "…" } }</pre>
+
+<h2>5. Wallet 🔐</h2>
+<ul>
+    <li><code>GET /wallets</code> → <code>{ "data": { "id": "…", "balance": 0, "currency": "NGN" } }</code></li>
+    <li><code>GET /wallets/transactions</code></li>
+</ul>
+
+<h2>6. Ratings</h2>
+<table>
+    <tr><th style="width:46%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>POST /ratings/driver/:bookingId</code> 🔐</td><td>Passenger rates a driver — <code>{ "rating": 5, "comment": "Smooth ride" }</code></td></tr>
+    <tr><td><code>GET /ratings/me</code> 🔐</td><td>All ratings received</td></tr>
+    <tr><td><code>GET /ratings/passenger/:passengerId</code> 🌐</td><td>Public</td></tr>
+</table>
+
+<h2>7. Rides and trips — current state</h2>
+<div class="warn">
+    <code>GET /api/v1/rides</code> and <code>GET /api/v1/rides/search</code> are public (no auth). Trip request/action endpoints exist in code but <code>trip.routes.js</code> is not mounted in <code>app.js</code> — no <code>/api/v1/trips</code> URL works. Booking endpoints under <code>/api/v1/bookings</code> are wired for the corporate booking flow.
+</div>
+
+<h2>8. Notifications 🔐</h2>
+<ul>
+    <li><code>GET /notifications</code></li>
+    <li><code>PATCH /notifications/read-all</code></li>
+    <li><code>PATCH /notifications/:id/read</code></li>
+    <li><code>DELETE /notifications/:id</code></li>
+</ul>
+
+<h2>Generic error shape</h2>
+<pre>{ "success": false, "message": "…" }   // 422 validation · 4xx client · 5xx server</pre>
+
+<div class="footer">
+    TheRide (formerly EcoRide) — Passenger API Reference · Generated Nov 14, 2026 ·
+    🔐 = requires <code>Authorization: Bearer &lt;token&gt;</code> · 🌐 = public
+</div>
+
+</div>
+</body>
+</html>

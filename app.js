@@ -30,6 +30,10 @@ import notificationRoutes from "./src/routes/notification.routes.js";
 import earningRoutes from "./src/routes/earning.routes.js";
 import requestLogger from "./src/middlewares/requestLogger.middleware.js";
 import corporateRoutes from "./src/routes/corporate.routes.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 const app = express();
@@ -55,6 +59,9 @@ await connectDB();
 app.get("/", (req, res) => {
   res.json({ message: "EcoRide API Running" });
 });
+
+// Serve API reference docs — /docs/API-reference-driver.html
+app.use("/docs", express.static(path.join(__dirname, "docs")));
 
 const PORT = process.env.PORT || 3000;
 

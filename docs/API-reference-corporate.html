@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TheRide — Corporate API Reference</title>
+<style>
+    :root { --ink:#1a1a2e; --muted:#5a5a72; --accent:#0f6b3f; --accent-light:#e6f4ec; --border:#d9d9e3; --code-bg:#f5f6fa; --warn-bg:#fff7e6; --warn-border:#e0a800; }
+    * { box-sizing: border-box; }
+    body { font-family:"Segoe UI", Arial, sans-serif; color:var(--ink); margin:0; font-size:10.5pt; line-height:1.5; }
+    .page { max-width:800px; margin:0 auto; padding:40px 48px; }
+    .doc-header { border-bottom:3px solid var(--accent); padding-bottom:14px; margin-bottom:22px; }
+    .doc-header h1 { margin:0; font-size:20pt; color:var(--accent); }
+    .doc-header .meta { margin-top:6px; color:var(--muted); font-size:9.5pt; }
+    .doc-header .meta strong { color:var(--ink); }
+    h2 { font-size:13pt; color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:4px; margin:26px 0 10px; break-after:avoid; }
+    h3 { font-size:11pt; margin:18px 0 6px; break-after:avoid; }
+    h3 .method { font-family:Consolas, monospace; font-size:9pt; font-weight:bold; color:#fff; background:var(--accent); padding:1px 7px; border-radius:3px; margin-right:6px; }
+    h3 .method.get { background:#1a6fb5; } h3 .method.patch { background:#8a5a00; } h3 .method.del { background:#a03030; }
+    h3 .lock { font-size:8.5pt; color:var(--muted); font-weight:normal; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    th, td { border:1px solid var(--border); padding:5px 9px; text-align:left; vertical-align:top; }
+    th { background:var(--accent-light); color:var(--accent); font-weight:600; }
+    code { font-family:Consolas,"Courier New",monospace; background:var(--code-bg); padding:1px 4px; border-radius:3px; font-size:9pt; }
+    pre { background:var(--code-bg); border:1px solid var(--border); border-radius:5px; padding:10px 12px; font-family:Consolas,"Courier New",monospace; font-size:8.8pt; line-height:1.45; white-space:pre-wrap; word-break:break-word; margin:6px 0 12px; break-inside:avoid; }
+    .note { background:var(--accent-light); border-left:4px solid var(--accent); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    .warn { background:var(--warn-bg); border-left:4px solid var(--warn-border); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    ul { margin:4px 0 10px; padding-left:20px; } li { margin:2px 0; }
+    .footer { margin-top:30px; padding-top:10px; border-top:1px solid var(--border); color:var(--muted); font-size:8.5pt; }
+    @media print { body { font-size:10pt; } .page { padding:0; max-width:none; } h2 { break-after:avoid; } pre, table, .note, .warn { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="doc-header">
+    <h1>TheRide — Corporate API Reference</h1>
+    <div class="meta">
+        <strong>Base URL:</strong> <code>http://localhost:3000/api/v1</code> &nbsp;·&nbsp;
+        <strong>Auth:</strong> <code>Authorization: Bearer &lt;token&gt;</code> &nbsp;·&nbsp;
+        <strong>Version:</strong> Nov 14, 2026
+    </div>
+</div>
+
+<h2>Journey order</h2>
+<pre>Register (company details) → Verify email → Login → Onboarding-status
+→ Complete profile (company address) → Upload documents → Admin review
+→ Dashboard → Employee management / Bookings / Wallet</pre>
+
+<p><strong><code>GET /auth/onboarding-status</code> — <code>nextStep</code> values for corporate:</strong></p>
+<table>
+    <tr><th style="width:30%">nextStep</th><th>Meaning</th></tr>
+    <tr><td><code>VERIFY_EMAIL</code></td><td>Enter the emailed code</td></tr>
+    <tr><td><code>COMPLETE_PROFILE</code></td><td><code>companyAddress</code> not set yet — <code>POST /corporate/profile</code></td></tr>
+    <tr><td><code>DASHBOARD</code></td><td>Profile has an address — go to dashboard</td></tr>
+</table>
+<div class="note">A CorporateProfile row is created automatically at registration (<code>profileCompleted: true</code>). Document upload and admin approval happen through the admin panel; document status does not currently gate the <code>nextStep</code> value.</div>
+
+<h2>1. Auth</h2>
+
+<h3><span class="method">POST</span>/auth/register</h3>
+<p>Corporate is auto-detected — send company details instead of a role. <code>phoneNumber</code> is optional here (required for drivers/passengers).</p>
+<pre>{
+  "fullName": "Bola Ade",
+  "email": "bola@acmeltd.com",
+  "phoneNumber": "08031112233",      // optional for corporate
+  "password": "Passw0rd!",
+  "confirmPassword": "Passw0rd!",
+  "companyName": "Acme Ltd",
+  "rcNumber": "RC-123456"
+}</pre>
+<pre>{
+  "success": true,
+  "message": "Registration successful. Please verify your email.",
+  "email": "bola@acmeltd.com",
+  "role": "CORPORATE_ADMIN",
+  "companyName": "Acme Ltd",
+  "rcNumber": "RC-123456"
+}</pre>
+
+<h3><span class="method">POST</span>/otp/verify-email &nbsp;·&nbsp; <span class="method">POST</span>/auth/login</h3>
+<pre>{ "email": "bola@acmeltd.com", "code": "4821" }
+{ "identifier": "bola@acmeltd.com", "password": "Passw0rd!" }</pre>
+<pre>{
+  "success": true,
+  "message": "Login successful.",
+  "token": "eyJhbGciOi…",
+  "user": {
+    "id": "c01d…",
+    "email": "bola@acmeltd.com",
+    "role": "CORPORATE_ADMIN",
+    "emailVerified": true,
+    "isVerified": false,
+    "status": "ACTIVE",
+    "companyName": "Acme Ltd",
+    "rcNumber": "RC-123456"
+  }
+}</pre>
+
+<h3>Password reset — corporate gets the web link only</h3>
+<p><code>POST /auth/forgot-password</code> <code>{ "email": "…" }</code> sends an email with a button to the corporate portal (no 4-digit code). The portal page calls:</p>
+<pre>POST /auth/reset-password/:token    { "newPassword": "…", "confirmPassword": "…" }</pre>
+
+<h3>Other auth endpoints</h3>
+<table>
+    <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>GET /auth/onboarding-status</code> 🔐</td><td>See table above</td></tr>
+    <tr><td><code>PATCH /auth/change-password</code> 🔐</td><td><code>{ "currentPassword": "…", "newPassword": "…" }</code></td></tr>
+    <tr><td><code>POST /auth/logout</code> 🔐</td><td>No body</td></tr>
+</table>
+
+<h2>2. Company profile</h2>
+
+<h3><span class="method">POST</span>/corporate/profile <span class="lock">🔐 CORPORATE_ADMIN</span></h3>
+<pre>{
+  "companyName": "Acme Ltd",       // required
+  "rcNumber": "RC-123456",         // required
+  "companyPhone": "08031112233",   // required
+  "companyAddress": "5 Marina Rd, Lagos Island, Lagos",  // required — sets COMPLETE_PROFILE off
+  "industry": "Logistics"          // optional
+}</pre>
+
+<h3><span class="method get">GET</span>/corporate/profile &nbsp;·&nbsp; <span class="method patch">PATCH</span>/corporate/profile <span class="lock">🔐</span></h3>
+<p>All fields optional on PATCH, plus <code>companyLogo</code> (URL).</p>
+
+<h3><span class="method get">GET</span>/corporate/dashboard <span class="lock">🔐</span></h3>
+<pre>{ "success": true, "message": "…", "data": { "…": "…" } }</pre>
+
+<h2>3. Company documents <span class="lock">— multipart/form-data</span></h2>
+<table>
+    <tr><th style="width:30%">File field</th><th>Document</th></tr>
+    <tr><td><code>cacCertificate</code></td><td>CAC certificate</td></tr>
+    <tr><td><code>taxCertificate</code></td><td>Tax clearance</td></tr>
+    <tr><td><code>businessLicense</code></td><td>Business license</td></tr>
+</table>
+<ul>
+    <li><code>POST /corporate/documents</code> 🔐</li>
+    <li><code>GET /corporate/documents</code> 🔐</li>
+    <li><code>PATCH /corporate/documents</code> 🔐 — re-upload</li>
+</ul>
+<p>Approval is done by a platform admin on <code>PATCH /api/v1/admin/corporates/:corporateId</code>.</p>
+
+<h2>4. Employee management</h2>
+<p>Employees are existing passenger users attached to the company. <code>userId</code> is the user's UUID.</p>
+
+<h3><span class="method">POST</span>/corporate/employees <span class="lock">🔐</span></h3>
+<pre>{
+  "userId": "4b1e8f0a-…",          // required, UUID of an existing user
+  "department": "Operations",      // optional
+  "employeeId": "ACM-014",         // optional
+  "position": "Field Officer"      // optional
+}</pre>
+
+<h3><span class="method patch">PATCH</span>/corporate/employees/:id <span class="lock">🔐</span></h3>
+<pre>{ "department": "Finance", "position": "Analyst", "status": "ACTIVE" }  // status: ACTIVE | INACTIVE</pre>
+
+<h3>Other employee endpoints</h3>
+<ul>
+    <li><code>GET /corporate/employees</code> 🔐 — list</li>
+    <li><code>GET /corporate/employees/:id</code> 🔐 — detail</li>
+    <li><code>DELETE /corporate/employees/:id</code> 🔐 — remove</li>
+</ul>
+
+<h2>5. Bookings <span class="lock">🔐 — corporate booking flow</span></h2>
+<table>
+    <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>POST /bookings</code></td><td>Create booking</td></tr>
+    <tr><td><code>GET /bookings</code> · <code>GET /bookings/history</code></td><td>List / history</td></tr>
+    <tr><td><code>GET /bookings/driver</code> · <code>GET /bookings/:id</code></td><td>Driver-side list / detail</td></tr>
+    <tr><td><code>PATCH /bookings/:id/cancel</code> · <code>/:id/accept</code> · <code>/:id/acknowledge</code> · <code>/:id/reject</code></td><td>Status transitions</td></tr>
+</table>
+
+<h2>6. Wallet 🔐</h2>
+<ul>
+    <li><code>GET /wallets</code></li>
+    <li><code>GET /wallets/transactions</code></li>
+</ul>
+
+<h2>7. Notifications 🔐</h2>
+<ul>
+    <li><code>GET /notifications</code> · <code>PATCH /notifications/read-all</code> · <code>PATCH /notifications/:id/read</code> · <code>DELETE /notifications/:id</code></li>
+</ul>
+
+<h2>Generic error shape</h2>
+<pre>{ "success": false, "message": "…" }   // 422 validation · 4xx client · 5xx server</pre>
+
+<div class="footer">
+    TheRide (formerly EcoRide) — Corporate API Reference · Generated Nov 14, 2026 ·
+    🔐 = requires <code>Authorization: Bearer &lt;token&gt;</code>
+</div>
+
+</div>
+</body>
+</html>

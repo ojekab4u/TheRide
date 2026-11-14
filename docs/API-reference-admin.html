@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TheRide — Platform Admin API Reference</title>
+<style>
+    :root { --ink:#1a1a2e; --muted:#5a5a72; --accent:#0f6b3f; --accent-light:#e6f4ec; --border:#d9d9e3; --code-bg:#f5f6fa; --warn-bg:#fff7e6; --warn-border:#e0a800; }
+    * { box-sizing: border-box; }
+    body { font-family:"Segoe UI", Arial, sans-serif; color:var(--ink); margin:0; font-size:10.5pt; line-height:1.5; }
+    .page { max-width:800px; margin:0 auto; padding:40px 48px; }
+    .doc-header { border-bottom:3px solid var(--accent); padding-bottom:14px; margin-bottom:22px; }
+    .doc-header h1 { margin:0; font-size:20pt; color:var(--accent); }
+    .doc-header .meta { margin-top:6px; color:var(--muted); font-size:9.5pt; }
+    .doc-header .meta strong { color:var(--ink); }
+    h2 { font-size:13pt; color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:4px; margin:26px 0 10px; break-after:avoid; }
+    h3 { font-size:11pt; margin:18px 0 6px; break-after:avoid; }
+    h3 .method { font-family:Consolas, monospace; font-size:9pt; font-weight:bold; color:#fff; background:var(--accent); padding:1px 7px; border-radius:3px; margin-right:6px; }
+    h3 .method.get { background:#1a6fb5; } h3 .method.patch { background:#8a5a00; } h3 .method.del { background:#a03030; }
+    h3 .lock { font-size:8.5pt; color:var(--muted); font-weight:normal; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    th, td { border:1px solid var(--border); padding:5px 9px; text-align:left; vertical-align:top; }
+    th { background:var(--accent-light); color:var(--accent); font-weight:600; }
+    code { font-family:Consolas,"Courier New",monospace; background:var(--code-bg); padding:1px 4px; border-radius:3px; font-size:9pt; }
+    pre { background:var(--code-bg); border:1px solid var(--border); border-radius:5px; padding:10px 12px; font-family:Consolas,"Courier New",monospace; font-size:8.8pt; line-height:1.45; white-space:pre-wrap; word-break:break-word; margin:6px 0 12px; break-inside:avoid; }
+    .note { background:var(--accent-light); border-left:4px solid var(--accent); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    .warn { background:var(--warn-bg); border-left:4px solid var(--warn-border); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    ul { margin:4px 0 10px; padding-left:20px; } li { margin:2px 0; }
+    .footer { margin-top:30px; padding-top:10px; border-top:1px solid var(--border); color:var(--muted); font-size:8.5pt; }
+    @media print { body { font-size:10pt; } .page { padding:0; max-width:none; } h2 { break-after:avoid; } pre, table, .note, .warn { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="doc-header">
+    <h1>TheRide — Platform Admin API Reference</h1>
+    <div class="meta">
+        <strong>Base URL:</strong> <code>http://localhost:3000/api/v1</code> &nbsp;·&nbsp;
+        <strong>Auth:</strong> <code>Authorization: Bearer &lt;token&gt;</code> (PLATFORM_ADMIN only) &nbsp;·&nbsp;
+        <strong>Version:</strong> Nov 14, 2026
+    </div>
+</div>
+
+<div class="note">Every endpoint below requires a PLATFORM_ADMIN token. Admin accounts are created with <code>scripts/createPlatformAdmin.js</code>. Login uses the standard <code>POST /auth/login</code>. Password reset for admins uses the web link email (same as corporate).</div>
+
+<h2>Review decision body (shared)</h2>
+<p>All review endpoints take the same PATCH body:</p>
+<pre>{
+  "status": "APPROVED",      // APPROVED | REJECTED — required
+  "reason": "optional note shown to the user on rejection"
+}</pre>
+
+<h2>1. Dashboard</h2>
+<h3><span class="method get">GET</span>/admin/dashboard</h3>
+<pre>{ "success": true, "message": "…", "data": { "…": "…" } }</pre>
+
+<h2>2. Driver review</h2>
+<table>
+    <tr><th style="width:34%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>GET /admin/drivers</code></td><td>All driver profiles (with document status)</td></tr>
+    <tr><td><code>GET /admin/drivers/:driverId</code></td><td>Driver detail — documents, vehicle, wallet</td></tr>
+    <tr><td><code>PATCH /admin/drivers/:driverProfileId</code></td><td>Decision body above</td></tr>
+</table>
+<div class="note">The driver decision syncs everything at once: DriverDocument.verificationStatus, DriverProfile.verificationStatus, User.isVerified, and sends the driver a notification. Rejected drivers re-upload via <code>PATCH /driver-documents</code>, which resets status to PENDING.</div>
+
+<h2>3. Passenger review</h2>
+<ul>
+    <li><code>GET /admin/passengers</code></li>
+    <li><code>GET /admin/passengers/:passengerId</code></li>
+    <li><code>PATCH /admin/passengers/:passengerId</code> — decision body</li>
+</ul>
+
+<h2>4. Vehicle review</h2>
+<ul>
+    <li><code>GET /admin/vehicles</code> — all vehicles for review</li>
+    <li><code>GET /admin/vehicles/:id</code></li>
+    <li><code>PATCH /admin/vehicles/:id</code> — decision body</li>
+</ul>
+<div class="note">A driver cannot reach the dashboard step (<code>ADD_VEHICLE</code> in onboarding-status) until at least one vehicle is APPROVED.</div>
+
+<h2>5. Inspection review</h2>
+<ul>
+    <li><code>GET /admin/inspections</code></li>
+    <li><code>GET /admin/inspections/:id</code></li>
+    <li><code>PATCH /admin/inspections/:id</code> — <code>{ "status": "PASSED" | "FAILED", "reviewNote": "…" }</code></li>
+</ul>
+
+<h2>6. Corporate review</h2>
+<ul>
+    <li><code>GET /admin/corporates</code></li>
+    <li><code>GET /admin/corporates/:corporateId</code> — profile + documents</li>
+    <li><code>PATCH /admin/corporates/:corporateId</code> — decision body</li>
+</ul>
+
+<h2>7. Users</h2>
+<table>
+    <tr><th style="width:34%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>GET /admin/users</code></td><td>All users</td></tr>
+    <tr><td><code>PATCH /admin/users/:id/role</code></td><td><code>{ "role": "PASSENGER" | "DRIVER" | "CORPORATE_ADMIN" | "PLATFORM_ADMIN" }</code></td></tr>
+</table>
+
+<h2>Generic error shape</h2>
+<pre>{ "success": false, "message": "…" }   // 403 non-admin token · 404 unknown id · 422 validation</pre>
+
+<div class="footer">
+    TheRide (formerly EcoRide) — Platform Admin API Reference · Generated Nov 14, 2026
+</div>
+
+</div>
+</body>
+</html>
