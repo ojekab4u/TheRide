@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TheRide — Driver API Reference</title>
+<style>
+    :root {
+        --ink: #1a1a2e;
+        --muted: #5a5a72;
+        --accent: #0f6b3f;
+        --accent-light: #e6f4ec;
+        --border: #d9d9e3;
+        --code-bg: #f5f6fa;
+        --warn-bg: #fff7e6;
+        --warn-border: #e0a800;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: var(--ink);
+        margin: 0;
+        font-size: 10.5pt;
+        line-height: 1.5;
+    }
+
+    .page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 48px;
+    }
+
+    /* ---------- Header ---------- */
+    .doc-header {
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 14px;
+        margin-bottom: 22px;
+    }
+
+    .doc-header h1 {
+        margin: 0;
+        font-size: 20pt;
+        color: var(--accent);
+    }
+
+    .doc-header .meta {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 9.5pt;
+    }
+
+    .doc-header .meta strong { color: var(--ink); }
+
+    /* ---------- Sections ---------- */
+    h2 {
+        font-size: 13pt;
+        color: var(--accent);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 4px;
+        margin: 26px 0 10px;
+        break-after: avoid;
+    }
+
+    h3 {
+        font-size: 11pt;
+        margin: 18px 0 6px;
+        break-after: avoid;
+    }
+
+    h3 .method {
+        font-family: Consolas, monospace;
+        font-size: 9pt;
+        font-weight: bold;
+        color: #fff;
+        background: var(--accent);
+        padding: 1px 7px;
+        border-radius: 3px;
+        margin-right: 6px;
+    }
+
+    h3 .method.get  { background: #1a6fb5; }
+    h3 .method.patch{ background: #8a5a00; }
+    h3 .method.del  { background: #a03030; }
+
+    h3 .lock { font-size: 8.5pt; color: var(--muted); font-weight: normal; }
+
+    /* ---------- Tables ---------- */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 14px;
+        font-size: 9.5pt;
+        break-inside: avoid;
+    }
+
+    th, td {
+        border: 1px solid var(--border);
+        padding: 5px 9px;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background: var(--accent-light);
+        color: var(--accent);
+        font-weight: 600;
+    }
+
+    code, .inline-code {
+        font-family: Consolas, "Courier New", monospace;
+        background: var(--code-bg);
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 9pt;
+    }
+
+    /* ---------- Code blocks ---------- */
+    pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 10px 12px;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 8.8pt;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin: 6px 0 12px;
+        break-inside: avoid;
+    }
+
+    /* ---------- Notes ---------- */
+    .note {
+        background: var(--accent-light);
+        border-left: 4px solid var(--accent);
+        padding: 8px 12px;
+        margin: 8px 0 14px;
+        font-size: 9.5pt;
+        break-inside: avoid;
+    }
+
+    .warn {
+        background: var(--warn-bg);
+        border-left: 4px solid var(--warn-border);
+        padding: 8px 12px;
+        margin: 8px 0 14px;
+        font-size: 9.5pt;
+        break-inside: avoid;
+    }
+
+    ul { margin: 4px 0 10px; padding-left: 20px; }
+    li { margin: 2px 0; }
+
+    .footer {
+        margin-top: 30px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 8.5pt;
+    }
+
+    @media print {
+        body { font-size: 10pt; }
+        .page { padding: 0; max-width: none; }
+        h2 { break-after: avoid; }
+        pre, table, .note, .warn { break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="doc-header">
+    <h1>TheRide — Driver API Reference</h1>
+    <div class="meta">
+        <strong>Base URL:</strong> <code>http://localhost:3000/api/v1</code> &nbsp;·&nbsp;
+        <strong>Auth:</strong> <code>Authorization: Bearer &lt;token&gt;</code> &nbsp;·&nbsp;
+        <strong>Content types:</strong> JSON (auth, vehicle) and multipart/form-data (documents, photos) &nbsp;·&nbsp;
+        <strong>Version:</strong> Nov 14, 2026
+    </div>
+</div>
+
+<h2>Driver journey order</h2>
+<pre>Register → Verify email → Login → Onboarding-status (drives every screen)
+→ Upload documents → Admin review → [Rejected? Re-upload] → Add vehicle
+→ Dashboard → Trips / Wallet / Earnings / Ratings</pre>
+
+<p><strong><code>GET /auth/onboarding-status</code> — <code>nextStep</code> values for drivers:</strong></p>
+<table>
+    <tr><th style="width:30%">nextStep</th><th>Meaning</th></tr>
+    <tr><td><code>VERIFY_EMAIL</code></td><td>Enter the emailed code</td></tr>
+    <tr><td><code>UPLOAD_DOCUMENTS</code></td><td>Show document upload screen</td></tr>
+    <tr><td><code>AWAIT_VERIFICATION</code></td><td>Admin is reviewing — show "under review"</td></tr>
+    <tr><td><code>REUPLOAD_DOCUMENTS</code></td><td>Documents rejected — show upload screen again</td></tr>
+    <tr><td><code>ADD_VEHICLE</code></td><td>Approved, but no APPROVED vehicle yet</td></tr>
+    <tr><td><code>DASHBOARD</code></td><td>Go to dashboard</td></tr>
+</table>
+
+<div class="note">The old <code>COMPLETE_PROFILE</code> step no longer exists for drivers — that screen was removed from the design. License details come from the uploaded license image.</div>
+
+<h2>1. Auth</h2>
+
+<h3><span class="method">POST</span>/auth/register</h3>
+<pre>{
+  "fullName": "Ugo Obi",              // or firstName + lastName
+  "email": "ugo@example.com",
+  "phoneNumber": "08031234567",        // REQUIRED for driver
+  "password": "Passw0rd!",
+  "confirmPassword": "Passw0rd!",
+  "role": "DRIVER"
+}</pre>
+<pre>{
+  "success": true,
+  "message": "Registration successful. Please verify your email.",
+  "email": "ugo@example.com",
+  "role": "DRIVER",
+  "driverId": "DRV-482913",
+  "firstName": "Ugo",
+  "lastName": "Obi"
+}</pre>
+<ul>
+    <li><strong>201</strong> on success · <strong>409</strong> email/phone exists · <strong>422</strong> validation (weak password, invalid Nigerian phone).</li>
+    <li>Password: min 8 chars, uppercase + lowercase + number + special character.</li>
+</ul>
+
+<h3><span class="method">POST</span>/otp/verify-email</h3>
+<pre>{ "email": "ugo@example.com", "code": "4821" }</pre>
+<pre>{ "success": true, "message": "Email verified successfully." }</pre>
+<p>Resend: <code>POST /otp/resend-email</code> <code>{ "email": "…" }</code>.</p>
+
+<h3><span class="method">POST</span>/auth/login</h3>
+<p>Driver can log in with <strong>email, phone, or the Driver ID</strong>:</p>
+<pre>{ "identifier": "DRV-482913", "password": "Passw0rd!" }</pre>
+<pre>{
+  "success": true,
+  "message": "Login successful.",
+  "token": "eyJhbGciOi…",
+  "user": {
+    "id": "9f2c…",
+    "email": "ugo@example.com",
+    "phoneNumber": "08031234567",
+    "role": "DRIVER",
+    "profilePicture": null,
+    "emailVerified": true,
+    "phoneVerified": false,
+    "isVerified": false,
+    "status": "ACTIVE",
+    "lastLogin": "2026-11-14T09:12:44.000Z",
+    "firstName": "Ugo",
+    "lastName": "Obi",
+    "driverId": "DRV-482913"
+  }
+}</pre>
+<ul>
+    <li><strong>401</strong> invalid credentials · <strong>403</strong> "Please verify your email first."</li>
+</ul>
+
+<h3><span class="method get">GET</span>/auth/onboarding-status <span class="lock">🔐 token</span></h3>
+<pre>{
+  "success": true,
+  "message": "Onboarding status retrieved successfully.",
+  "data": {
+    "role": "DRIVER",
+    "emailVerified": true,
+    "phoneVerified": false,
+    "profileCompleted": false,
+    "documentsUploaded": true,
+    "verificationStatus": "PENDING",
+    "nextStep": "AWAIT_VERIFICATION"
+  }
+}</pre>
+
+<h3><span class="method">POST</span>/auth/forgot-password</h3>
+<pre>{ "email": "ugo@example.com" }</pre>
+<pre>{ "success": true, "message": "If the email exists, a reset code has been sent." }</pre>
+<div class="note">Drivers receive the <strong>4-digit code only</strong> (10 min, no web link). Corporate/platform admins receive the web link only.</div>
+
+<h3><span class="method">POST</span>/auth/verify-reset-code</h3>
+<pre>{ "email": "ugo@example.com", "code": "1550" }</pre>
+<pre>{
+  "success": true,
+  "message": "Reset code verified.",
+  "data": { "resetToken": "9f2c8d1e4b…" }
+}</pre>
+<ul>
+    <li>Hold the <code>resetToken</code> in app memory — the next request needs it.</li>
+    <li><strong>400</strong> invalid/expired code. The code is consumed here and cannot be reused.</li>
+</ul>
+
+<h3><span class="method">POST</span>/auth/reset-password/:resetToken</h3>
+<pre>{ "newPassword": "N3wPassw0rd!", "confirmPassword": "N3wPassw0rd!" }</pre>
+<pre>{ "success": true, "message": "Password has been reset successfully." }</pre>
+
+<h3><span class="method patch">PATCH</span>/auth/change-password <span class="lock">🔐 token</span></h3>
+<pre>{ "currentPassword": "Passw0rd!", "newPassword": "N3wPassw0rd!" }</pre>
+<pre>{ "success": true, "message": "Password changed successfully." }</pre>
+
+<h3><span class="method">POST</span>/auth/logout <span class="lock">🔐 token</span></h3>
+<pre>{ "success": true, "message": "Logged out successfully." }</pre>
+
+<h2>2. Driver documents — multipart/form-data</h2>
+
+<h3><span class="method">POST</span>/driver-documents <span class="lock">🔐 DRIVER</span></h3>
+<table>
+    <tr><th style="width:34%">form-data field</th><th>Type</th><th>Required</th></tr>
+    <tr><td><code>driverLicense</code></td><td>file</td><td>✅</td></tr>
+    <tr><td><code>vehicleRegistration</code></td><td>file</td><td>✅</td></tr>
+    <tr><td><code>insuranceCertificate</code></td><td>file</td><td>✅</td></tr>
+    <tr><td><code>selfie</code></td><td>file</td><td>✅</td></tr>
+    <tr><td><code>nationalId</code></td><td>file</td><td>optional</td></tr>
+    <tr><td><code>fullName</code></td><td>text</td><td>optional — fallback name if OCR unavailable; names auto-populate from the license image</td></tr>
+</table>
+<pre>{
+  "success": true,
+  "message": "Driver documents uploaded successfully.",
+  "data": {
+    "id": "b31a…",
+    "driverId": "8d2e…",
+    "driverLicenseUrl": "https://res.cloudinary.com/…/license.jpg",
+    "vehicleRegistrationUrl": "https://res.cloudinary.com/…/registration.jpg",
+    "insuranceCertificateUrl": "https://res.cloudinary.com/…/insurance.jpg",
+    "selfieUrl": "https://res.cloudinary.com/…/selfie.jpg",
+    "nationalIdUrl": null,
+    "verificationStatus": "PENDING",
+    "verificationNote": null,
+    "verifiedAt": null,
+    "extractedName": "UGO OBI OBI"
+  }
+}</pre>
+<p><strong>400</strong> — <code>Missing documents: driverLicense — kindly upload clear and accepted files</code></p>
+
+<h3><span class="method get">GET</span>/driver-documents <span class="lock">🔐 DRIVER</span></h3>
+<p><strong>200</strong> — same <code>data</code> shape as above (without <code>extractedName</code>); <strong>404</strong> if none uploaded yet.</p>
+
+<h3><span class="method patch">PATCH</span>/driver-documents <span class="lock">🔐 DRIVER — re-upload after rejection</span></h3>
+<p>form-data: <strong>at least one</strong> of the file fields above.</p>
+<pre>{
+  "success": true,
+  "message": "Driver documents updated successfully.",
+  "data": { "…": "…", "verificationStatus": "PENDING" }
+}</pre>
+<div class="note">Status auto-resets to <strong>PENDING</strong> for fresh admin review. <strong>400</strong> if no file provided.</div>
+
+<h2>3. Driver profile</h2>
+<div class="warn">The "Driving Information" screen was <strong>removed from the design</strong> — the app should not show it. These endpoints keep working for backward compatibility; license details will come from the uploaded license image (OCR, later).</div>
+<ul>
+    <li><code>GET /drivers/profile</code> 🔐</li>
+    <li><code>POST /drivers/profile</code> / <code>PATCH /drivers/profile</code> 🔐 (unused by mobile)</li>
+</ul>
+<pre>{
+  "licenseNumber": "FKJ12345AB",
+  "licenseExpiry": "2027-05-20",
+  "yearsOfExperience": 4,
+  "preferredVehicleType": "SUV"
+}</pre>
+
+<h2>4. Vehicles</h2>
+
+<h3><span class="method">POST</span>/vehicles <span class="lock">🔐 DRIVER — multipart/form-data</span></h3>
+<table>
+    <tr><th style="width:30%">Field</th><th>Rules</th></tr>
+    <tr><td><code>brand</code></td><td>required</td></tr>
+    <tr><td><code>model</code></td><td>required</td></tr>
+    <tr><td><code>year</code></td><td>required, 1990–next year</td></tr>
+    <tr><td><code>color</code></td><td>required</td></tr>
+    <tr><td><code>plateNumber</code></td><td>required</td></tr>
+    <tr><td><code>vehicleType</code></td><td>required — <code>SEDAN</code> <code>SUV</code> <code>MINIBUS</code> <code>TRUCK</code> <code>BIKE</code></td></tr>
+    <tr><td><code>seatCapacity</code></td><td>required, 1–80</td></tr>
+    <tr><td><code>frontImage</code> <code>rearImage</code> <code>leftImage</code> <code>rightImage</code> <code>interiorImage</code></td><td>optional file fields (body URLs also accepted)</td></tr>
+</table>
+<pre>{
+  "success": true,
+  "message": "Vehicle created successfully.",
+  "data": {
+    "id": "77aa…",
+    "driverId": "8d2e…",
+    "brand": "Toyota",
+    "model": "Corolla",
+    "year": 2021,
+    "color": "Silver",
+    "plateNumber": "KJA123AB",
+    "vehicleType": "SEDAN",
+    "seatCapacity": 4,
+    "verificationStatus": "PENDING",
+    "frontImage": "https://res.cloudinary.com/…/front.jpg",
+    "rearImage": null,
+    "leftImage": null,
+    "rightImage": null,
+    "interiorImage": null
+  }
+}</pre>
+<div class="note">Admin must APPROVE the vehicle too — until then onboarding-status returns <code>ADD_VEHICLE</code>.</div>
+
+<h3><span class="method get">GET</span>/vehicles &nbsp;·&nbsp; <span class="method get">GET</span>/vehicles/:id <span class="lock">🔐</span></h3>
+<p>List is ownership-scoped.</p>
+
+<h3><span class="method patch">PATCH</span>/vehicles/:id <span class="lock">🔐</span></h3>
+<p>Any body field optional; same photo file fields optional.</p>
+
+<h3><span class="method del">DELETE</span>/vehicles/:id <span class="lock">🔐</span></h3>
+<pre>{ "success": true, "message": "Vehicle deleted successfully." }</pre>
+
+<h2>5. Dashboard</h2>
+
+<h3><span class="method get">GET</span>/dashboard/driver <span class="lock">🔐 DRIVER</span></h3>
+<p>Works even before a vehicle exists (<code>vehicle: null</code>, zeroed stats):</p>
+<pre>{
+  "success": true,
+  "message": "Driver dashboard retrieved successfully.",
+  "data": {
+    "profile": {
+      "firstName": "Ugo",
+      "lastName": "Obi",
+      "fullName": "Ugo Obi",
+      "email": "ugo@example.com",
+      "profilePicture": null,
+      "verified": true,
+      "rating": 4.6
+    },
+    "vehicle": null,
+    "wallet": { "balance": 0, "todayEarnings": 0, "currency": "NGN" },
+    "stats": {
+      "totalTrips": 0, "scheduledTrips": 0, "acceptedTrips": 0,
+      "ongoingTrips": 0, "completedTrips": 0, "cancelledTrips": 0,
+      "pendingRequests": 0
+    },
+    "activeRide": null,
+    "upcomingRides": [],
+    "unreadNotifications": 2
+  }
+}</pre>
+
+<h2>6. Wallet <span class="lock">🔐 — DRIVER allowed</span></h2>
+<ul>
+    <li><code>GET /wallets</code> → <code>{ "data": { "id": "…", "balance": 12500, "currency": "NGN" } }</code></li>
+    <li><code>GET /wallets/transactions</code> → <code>{ "data": [ { "id": "…", "type": "CREDIT", "amount": 2500, "…": "…" } ] }</code></li>
+</ul>
+
+<h2>7. Earnings <span class="lock">🔐 DRIVER</span></h2>
+<ul>
+    <li><code>GET /driver/earnings</code></li>
+    <li><code>GET /driver/earnings/history</code></li>
+    <li><code>GET /driver/earnings/summary</code></li>
+</ul>
+
+<h2>8. Notifications <span class="lock">🔐 — any role</span></h2>
+<ul>
+    <li><code>GET /notifications</code></li>
+    <li><code>PATCH /notifications/read-all</code></li>
+    <li><code>PATCH /notifications/:id/read</code></li>
+    <li><code>DELETE /notifications/:id</code></li>
+</ul>
+<div class="note">Approval/rejection of documents and vehicles arrives here — poll this (or re-check onboarding-status) while on the <code>AWAIT_VERIFICATION</code> screen.</div>
+
+<h2>9. Ratings</h2>
+<table>
+    <tr><th style="width:46%">Endpoint</th><th>Who</th><th>Notes</th></tr>
+    <tr><td><code>POST /ratings/passenger/:bookingId</code> 🔐</td><td>Driver rates a passenger</td><td><code>{ "rating": 5, "comment": "Great passenger" }</code></td></tr>
+    <tr><td><code>GET /ratings/me</code> 🔐</td><td>Driver</td><td>All ratings received</td></tr>
+    <tr><td><code>GET /ratings/driver/:driverId</code> 🌐</td><td>Public</td><td>Driver's public rating</td></tr>
+</table>
+
+<h2>10. Trips</h2>
+<div class="warn"><strong>NOT CURRENTLY MOUNTED.</strong> The driver actions exist in code (<code>PATCH /trips/:id/accept</code>, <code>/reject</code>, <code>/arrive</code>, <code>/start</code>, <code>/complete</code>) but <code>trip.routes.js</code> is imported in <code>app.js</code> and never mounted — no <code>/api/v1/trips</code> URL works right now. Do <strong>not</strong> build against these until the router is mounted.</div>
+
+<h2>Generic error shape</h2>
+<pre>{ "success": false, "message": "…" }   // 422 validation · 4xx client · 5xx server</pre>
+
+<div class="footer">
+    TheRide (formerly EcoRide) — Driver API Reference · Generated Nov 14, 2026 ·
+    🔐 = requires <code>Authorization: Bearer &lt;token&gt;</code> · 🌐 = public
+</div>
+
+</div>
+</body>
+</html>
