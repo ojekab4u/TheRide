@@ -16,6 +16,7 @@ import AppError from "../utils/AppError.js";
 import { paginate, getPagingData } from "../utils/pagination.js";
 import {calculateAvailableSeats} from "../helpers/calculateAvailableSeats.js"
 import { createNotification } from "./notification.service.js";
+import generateRideCode from "../utils/generateRideCode.js";
 
 const getDriverVehicle = async (userId) => {
 
@@ -103,10 +104,20 @@ export const createRideService = async (
         );
     }
 
+    // Short numeric display ID (e.g. 123456789)
+    let rideCode;
+    let isUnique = false;
+    while (!isUnique) {
+        rideCode = generateRideCode();
+        const existing = await Ride.findOne({ where: { rideCode } });
+        if (!existing) isUnique = true;
+    }
+
     return await Ride.create({
         ...rideData,
         remainingSeats:
             rideData.availableSeats,
+        rideCode,
         vehicleId,
         allowRecurringBooking:
             rideData.allowRecurringBooking ?? false,
@@ -318,7 +329,7 @@ export const deleteRideService = async (
 
 
 export const cancelRideService = async (
-    userId, rideId) => {
+    userId, rideId, cancelReason) => {
 
     // Find driver
     const driver = await DriverProfile.findOne({
@@ -378,6 +389,7 @@ export const cancelRideService = async (
 
     // Cancel ride
     ride.status = "CANCELLED";
+    ride.cancelReason = cancelReason || null;
     await ride.save();
 
     // Cancel every pending/confirmed booking

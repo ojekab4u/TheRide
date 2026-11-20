@@ -2,6 +2,33 @@ import DriverProfile from "../models/driver.model.js";
 import Vehicle from "../models/vehicle.model.js";
 import VehicleInspection from "../models/vehicleInspection.model.js";
 import AppError from "../utils/AppError.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
+
+// Upload multer temp files to Cloudinary so inspection
+// photos are stored as URLs, consistent with driver documents
+const uploadInspectionPhotos = async (files) => {
+    const data = {};
+
+    const photoFields = [
+        "frontPhoto",
+        "rearPhoto",
+        "dashboardPhoto",
+        "odometerPhoto",
+        "tyrePhoto",
+        "safetyEquipmentPhoto",
+    ];
+
+    for (const field of photoFields) {
+        if (files?.[field]?.[0]) {
+            data[field] = await uploadToCloudinary(
+                files[field][0].path,
+                "EcoRide/VehicleInspections"
+            );
+        }
+    }
+
+    return data;
+};
 
 export const createVehicleInspectionService = async (
     userId,
@@ -70,16 +97,9 @@ export const createVehicleInspectionService = async (
         }
     }
 
-    // Build inspection object
-    const inspectionData = {
-        frontPhoto: files.frontPhoto[0].path,
-        rearPhoto: files.rearPhoto[0].path,
-        dashboardPhoto: files.dashboardPhoto[0].path,
-        odometerPhoto: files.odometerPhoto[0].path,
-        tyrePhoto: files.tyrePhoto[0].path,
-        safetyEquipmentPhoto:
-            files.safetyEquipmentPhoto[0].path,
-    };
+    // Upload photos to Cloudinary
+    const inspectionData =
+        await uploadInspectionPhotos(files);
 
     // Create inspection
     const inspection =
@@ -151,37 +171,8 @@ export const updateVehicleInspectionService = async (
             vehicleId
         );
 
-    const inspectionData = {};
-
-    if (files?.frontPhoto?.[0]) {
-        inspectionData.frontPhoto =
-            files.frontPhoto[0].path;
-    }
-
-    if (files?.rearPhoto?.[0]) {
-        inspectionData.rearPhoto =
-            files.rearPhoto[0].path;
-    }
-
-    if (files?.dashboardPhoto?.[0]) {
-        inspectionData.dashboardPhoto =
-            files.dashboardPhoto[0].path;
-    }
-
-    if (files?.odometerPhoto?.[0]) {
-        inspectionData.odometerPhoto =
-            files.odometerPhoto[0].path;
-    }
-
-    if (files?.tyrePhoto?.[0]) {
-        inspectionData.tyrePhoto =
-            files.tyrePhoto[0].path;
-    }
-
-    if (files?.safetyEquipmentPhoto?.[0]) {
-        inspectionData.safetyEquipmentPhoto =
-            files.safetyEquipmentPhoto[0].path;
-    }
+    const inspectionData =
+        await uploadInspectionPhotos(files);
 
     inspectionData.inspectionStatus = "PENDING";
     inspectionData.reviewNote = null;

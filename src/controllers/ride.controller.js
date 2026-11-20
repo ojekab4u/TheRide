@@ -165,7 +165,8 @@ export const cancelRide = async (
         const ride =
             await cancelRideService(
                 req.user.id,
-                req.params.id
+                req.params.id,
+                req.body?.reason
             );
 
         return successResponse(

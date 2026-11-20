@@ -28,6 +28,7 @@ import tripRoutes from "./src/routes/trip.routes.js";
 import dashboardRoutes from "./src/routes/dashboard.routes.js";
 import notificationRoutes from "./src/routes/notification.routes.js";
 import earningRoutes from "./src/routes/earning.routes.js";
+import bankAccountRoutes from "./src/routes/bankAccount.routes.js";
 import requestLogger from "./src/middlewares/requestLogger.middleware.js";
 import corporateRoutes from "./src/routes/corporate.routes.js";
 import path from "path";
@@ -78,7 +79,10 @@ app.use("/api/v1/vehicles", vehicleRoutes);
 app.use("/api/v1/dashboard",dashboardRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/wallets", walletRoutes);
-app.use("/api/v1/driver/earnings", earningRoutes
+app.use(
+  "/api/v1/bank-accounts",
+  bankAccountRoutes
+);app.use("/api/v1/driver/earnings", earningRoutes
 );
 app.use("/api/v1/admin", adminRoutes);
 

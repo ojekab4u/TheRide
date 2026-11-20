@@ -45,6 +45,17 @@ const Ride = sequelize.define(
       allowNull: false,
     },
 
+    rideCode: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true,
+    },
+
+    cancelReason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+
     availableSeats: {
       type: DataTypes.INTEGER,
       allowNull: false,

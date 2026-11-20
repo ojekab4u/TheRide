@@ -1,171 +1,33 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>TheRide — Driver API Reference</title>
 <style>
-    :root {
-        --ink: #1a1a2e;
-        --muted: #5a5a72;
-        --accent: #0f6b3f;
-        --accent-light: #e6f4ec;
-        --border: #d9d9e3;
-        --code-bg: #f5f6fa;
-        --warn-bg: #fff7e6;
-        --warn-border: #e0a800;
-    }
-
+    :root { --ink:#1a1a2e; --muted:#5a5a72; --accent:#0f6b3f; --accent-light:#e6f4ec; --border:#d9d9e3; --code-bg:#f5f6fa; --warn-bg:#fff7e6; --warn-border:#e0a800; }
     * { box-sizing: border-box; }
-
-    body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        color: var(--ink);
-        margin: 0;
-        font-size: 10.5pt;
-        line-height: 1.5;
-    }
-
-    .page {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 40px 48px;
-    }
-
-    /* ---------- Header ---------- */
-    .doc-header {
-        border-bottom: 3px solid var(--accent);
-        padding-bottom: 14px;
-        margin-bottom: 22px;
-    }
-
-    .doc-header h1 {
-        margin: 0;
-        font-size: 20pt;
-        color: var(--accent);
-    }
-
-    .doc-header .meta {
-        margin-top: 6px;
-        color: var(--muted);
-        font-size: 9.5pt;
-    }
-
-    .doc-header .meta strong { color: var(--ink); }
-
-    /* ---------- Sections ---------- */
-    h2 {
-        font-size: 13pt;
-        color: var(--accent);
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 4px;
-        margin: 26px 0 10px;
-        break-after: avoid;
-    }
-
-    h3 {
-        font-size: 11pt;
-        margin: 18px 0 6px;
-        break-after: avoid;
-    }
-
-    h3 .method {
-        font-family: Consolas, monospace;
-        font-size: 9pt;
-        font-weight: bold;
-        color: #fff;
-        background: var(--accent);
-        padding: 1px 7px;
-        border-radius: 3px;
-        margin-right: 6px;
-    }
-
-    h3 .method.get  { background: #1a6fb5; }
-    h3 .method.patch{ background: #8a5a00; }
-    h3 .method.del  { background: #a03030; }
-
-    h3 .lock { font-size: 8.5pt; color: var(--muted); font-weight: normal; }
-
-    /* ---------- Tables ---------- */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 8px 0 14px;
-        font-size: 9.5pt;
-        break-inside: avoid;
-    }
-
-    th, td {
-        border: 1px solid var(--border);
-        padding: 5px 9px;
-        text-align: left;
-        vertical-align: top;
-    }
-
-    th {
-        background: var(--accent-light);
-        color: var(--accent);
-        font-weight: 600;
-    }
-
-    code, .inline-code {
-        font-family: Consolas, "Courier New", monospace;
-        background: var(--code-bg);
-        padding: 1px 4px;
-        border-radius: 3px;
-        font-size: 9pt;
-    }
-
-    /* ---------- Code blocks ---------- */
-    pre {
-        background: var(--code-bg);
-        border: 1px solid var(--border);
-        border-radius: 5px;
-        padding: 10px 12px;
-        font-family: Consolas, "Courier New", monospace;
-        font-size: 8.8pt;
-        line-height: 1.45;
-        white-space: pre-wrap;
-        word-break: break-word;
-        margin: 6px 0 12px;
-        break-inside: avoid;
-    }
-
-    /* ---------- Notes ---------- */
-    .note {
-        background: var(--accent-light);
-        border-left: 4px solid var(--accent);
-        padding: 8px 12px;
-        margin: 8px 0 14px;
-        font-size: 9.5pt;
-        break-inside: avoid;
-    }
-
-    .warn {
-        background: var(--warn-bg);
-        border-left: 4px solid var(--warn-border);
-        padding: 8px 12px;
-        margin: 8px 0 14px;
-        font-size: 9.5pt;
-        break-inside: avoid;
-    }
-
-    ul { margin: 4px 0 10px; padding-left: 20px; }
-    li { margin: 2px 0; }
-
-    .footer {
-        margin-top: 30px;
-        padding-top: 10px;
-        border-top: 1px solid var(--border);
-        color: var(--muted);
-        font-size: 8.5pt;
-    }
-
-    @media print {
-        body { font-size: 10pt; }
-        .page { padding: 0; max-width: none; }
-        h2 { break-after: avoid; }
-        pre, table, .note, .warn { break-inside: avoid; }
-    }
+    body { font-family:"Segoe UI", Arial, sans-serif; color:var(--ink); margin:0; font-size:10.5pt; line-height:1.5; }
+    .page { max-width:800px; margin:0 auto; padding:40px 48px; }
+    .doc-header { border-bottom:3px solid var(--accent); padding-bottom:14px; margin-bottom:22px; }
+    .doc-header h1 { margin:0; font-size:20pt; color:var(--accent); }
+    .doc-header .meta { margin-top:6px; color:var(--muted); font-size:9.5pt; }
+    .doc-header .meta strong { color:var(--ink); }
+    h2 { font-size:13pt; color:var(--accent); border-bottom:1px solid var(--border); padding-bottom:4px; margin:26px 0 10px; break-after:avoid; }
+    h3 { font-size:11pt; margin:18px 0 6px; break-after:avoid; }
+    h4 { font-size:10.5pt; margin:14px 0 4px; break-after:avoid; }
+    h3 .method, h4 .method { font-family:Consolas, monospace; font-size:9pt; font-weight:bold; color:#fff; background:var(--accent); padding:1px 7px; border-radius:3px; margin-right:6px; }
+    h3 .method.get, h4 .method.get { background:#1a6fb5; } h3 .method.patch, h4 .method.patch { background:#8a5a00; } h3 .method.del, h4 .method.del { background:#a03030; }
+    h3 .lock, h4 .lock { font-size:8.5pt; color:var(--muted); font-weight:normal; }
+    table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    th, td { border:1px solid var(--border); padding:5px 9px; text-align:left; vertical-align:top; }
+    th { background:var(--accent-light); color:var(--accent); font-weight:600; }
+    code { font-family:Consolas,"Courier New",monospace; background:var(--code-bg); padding:1px 4px; border-radius:3px; font-size:9pt; }
+    pre { background:var(--code-bg); border:1px solid var(--border); border-radius:5px; padding:10px 12px; font-family:Consolas,"Courier New",monospace; font-size:8.8pt; line-height:1.45; white-space:pre-wrap; word-break:break-word; margin:6px 0 12px; break-inside:avoid; }
+    .note { background:var(--accent-light); border-left:4px solid var(--accent); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    .warn { background:var(--warn-bg); border-left:4px solid var(--warn-border); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
+    ul { margin:4px 0 10px; padding-left:20px; } li { margin:2px 0; }
+    .footer { margin-top:30px; padding-top:10px; border-top:1px solid var(--border); color:var(--muted); font-size:8.5pt; }
+    @media print { body { font-size:10pt; } .page { padding:0; max-width:none; } h2, h3 { break-after:avoid; } pre, table, .note, .warn { break-inside:avoid; } }
 </style>
 </head>
 <body>
@@ -176,15 +38,16 @@
     <div class="meta">
         <strong>Base URL:</strong> <code>http://localhost:3000/api/v1</code> &nbsp;·&nbsp;
         <strong>Auth:</strong> <code>Authorization: Bearer &lt;token&gt;</code> &nbsp;·&nbsp;
-        <strong>Content types:</strong> JSON (auth, vehicle) and multipart/form-data (documents, photos) &nbsp;·&nbsp;
-        <strong>Version:</strong> Nov 14, 2026
+        <strong>Content types:</strong> JSON and multipart/form-data &nbsp;·&nbsp;
+        <strong>Version:</strong> Nov 20, 2026
     </div>
 </div>
 
 <h2>Driver journey order</h2>
 <pre>Register → Verify email → Login → Onboarding-status (drives every screen)
 → Upload documents → Admin review → [Rejected? Re-upload] → Add vehicle
-→ Dashboard → Trips / Wallet / Earnings / Ratings</pre>
+→ Admin approves vehicle → Inspection → Admin passes inspection → Dashboard
+→ Create ride → Receive bookings → Run the ride → Get paid</pre>
 
 <p><strong><code>GET /auth/onboarding-status</code> — <code>nextStep</code> values for drivers:</strong></p>
 <table>
@@ -220,14 +83,14 @@
   "lastName": "Obi"
 }</pre>
 <ul>
-    <li><strong>201</strong> on success · <strong>409</strong> email/phone exists · <strong>422</strong> validation (weak password, invalid Nigerian phone).</li>
+    <li><strong>201</strong> on success · <strong>409</strong> email/phone exists · <strong>422</strong> validation.</li>
     <li>Password: min 8 chars, uppercase + lowercase + number + special character.</li>
 </ul>
 
 <h3><span class="method">POST</span>/otp/verify-email</h3>
 <pre>{ "email": "ugo@example.com", "code": "4821" }</pre>
 <pre>{ "success": true, "message": "Email verified successfully." }</pre>
-<p>Resend: <code>POST /otp/resend-email</code> <code>{ "email": "…" }</code>.</p>
+<p>Resend: <code>POST /otp/resend-email</code> <code>{ "email": "…" }</code></p>
 
 <h3><span class="method">POST</span>/auth/login</h3>
 <p>Driver can log in with <strong>email, phone, or the Driver ID</strong>:</p>
@@ -237,26 +100,19 @@
   "message": "Login successful.",
   "token": "eyJhbGciOi…",
   "user": {
-    "id": "9f2c…",
-    "email": "ugo@example.com",
-    "phoneNumber": "08031234567",
-    "role": "DRIVER",
-    "profilePicture": null,
-    "emailVerified": true,
-    "phoneVerified": false,
-    "isVerified": false,
-    "status": "ACTIVE",
-    "lastLogin": "2026-11-14T09:12:44.000Z",
-    "firstName": "Ugo",
-    "lastName": "Obi",
-    "driverId": "DRV-482913"
+    "id": "9f2c…", "email": "ugo@example.com",
+    "phoneNumber": "08031234567", "role": "DRIVER",
+    "profilePicture": null, "emailVerified": true,
+    "phoneVerified": false, "isVerified": false,
+    "status": "ACTIVE", "lastLogin": "2026-11-20T09:12:44.000Z",
+    "firstName": "Ugo", "lastName": "Obi", "driverId": "DRV-482913"
   }
 }</pre>
 <ul>
     <li><strong>401</strong> invalid credentials · <strong>403</strong> "Please verify your email first."</li>
 </ul>
 
-<h3><span class="method get">GET</span>/auth/onboarding-status <span class="lock">🔐 token</span></h3>
+<h3><span class="method get">GET</span>/auth/onboarding-status <span class="lock">token required</span></h3>
 <pre>{
   "success": true,
   "message": "Onboarding status retrieved successfully.",
@@ -271,43 +127,33 @@
   }
 }</pre>
 
-<h3><span class="method">POST</span>/auth/forgot-password</h3>
-<pre>{ "email": "ugo@example.com" }</pre>
-<pre>{ "success": true, "message": "If the email exists, a reset code has been sent." }</pre>
-<div class="note">Drivers receive the <strong>4-digit code only</strong> (10 min, no web link). Corporate/platform admins receive the web link only.</div>
-
-<h3><span class="method">POST</span>/auth/verify-reset-code</h3>
-<pre>{ "email": "ugo@example.com", "code": "1550" }</pre>
-<pre>{
-  "success": true,
-  "message": "Reset code verified.",
-  "data": { "resetToken": "9f2c8d1e4b…" }
-}</pre>
+<h3>Password reset — mobile flow (code only, no web link)</h3>
+<pre>POST /auth/forgot-password      { "email": "ugo@example.com" }
+POST /auth/verify-reset-code    { "email": "ugo@example.com", "code": "1550" }
+                                → { "data": { "resetToken": "9f2c…" } }
+POST /auth/reset-password/9f2c… { "newPassword": "N3wPassw0rd!", "confirmPassword": "N3wPassw0rd!" }</pre>
 <ul>
-    <li>Hold the <code>resetToken</code> in app memory — the next request needs it.</li>
-    <li><strong>400</strong> invalid/expired code. The code is consumed here and cannot be reused.</li>
+    <li>The 4-digit code expires in 10 minutes; the code is consumed at the verify step.</li>
+    <li>The app holds <code>resetToken</code> in memory (valid 15 minutes) for the final call.</li>
+    <li>"Resend" = <code>POST /auth/forgot-password</code> again — fresh code, old token invalidated.</li>
 </ul>
 
-<h3><span class="method">POST</span>/auth/reset-password/:resetToken</h3>
-<pre>{ "newPassword": "N3wPassw0rd!", "confirmPassword": "N3wPassw0rd!" }</pre>
-<pre>{ "success": true, "message": "Password has been reset successfully." }</pre>
-
-<h3><span class="method patch">PATCH</span>/auth/change-password <span class="lock">🔐 token</span></h3>
-<pre>{ "currentPassword": "Passw0rd!", "newPassword": "N3wPassw0rd!" }</pre>
-<pre>{ "success": true, "message": "Password changed successfully." }</pre>
-
-<h3><span class="method">POST</span>/auth/logout <span class="lock">🔐 token</span></h3>
-<pre>{ "success": true, "message": "Logged out successfully." }</pre>
+<h3>Other auth endpoints</h3>
+<table>
+    <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>PATCH /auth/change-password</code> (token)</td><td><code>{ "currentPassword": "…", "newPassword": "…" }</code></td></tr>
+    <tr><td><code>POST /auth/logout</code> (token)</td><td>No body</td></tr>
+</table>
 
 <h2>2. Driver documents — multipart/form-data</h2>
 
-<h3><span class="method">POST</span>/driver-documents <span class="lock">🔐 DRIVER</span></h3>
+<h3><span class="method">POST</span>/driver-documents <span class="lock">DRIVER</span></h3>
 <table>
     <tr><th style="width:34%">form-data field</th><th>Type</th><th>Required</th></tr>
-    <tr><td><code>driverLicense</code></td><td>file</td><td>✅</td></tr>
-    <tr><td><code>vehicleRegistration</code></td><td>file</td><td>✅</td></tr>
-    <tr><td><code>insuranceCertificate</code></td><td>file</td><td>✅</td></tr>
-    <tr><td><code>selfie</code></td><td>file</td><td>✅</td></tr>
+    <tr><td><code>driverLicense</code></td><td>file</td><td>Yes</td></tr>
+    <tr><td><code>vehicleRegistration</code></td><td>file</td><td>Yes</td></tr>
+    <tr><td><code>insuranceCertificate</code></td><td>file</td><td>Yes</td></tr>
+    <tr><td><code>selfie</code></td><td>file</td><td>Yes</td></tr>
     <tr><td><code>nationalId</code></td><td>file</td><td>optional</td></tr>
     <tr><td><code>fullName</code></td><td>text</td><td>optional — fallback name if OCR unavailable; names auto-populate from the license image</td></tr>
 </table>
@@ -330,23 +176,14 @@
 }</pre>
 <p><strong>400</strong> — <code>Missing documents: driverLicense — kindly upload clear and accepted files</code></p>
 
-<h3><span class="method get">GET</span>/driver-documents <span class="lock">🔐 DRIVER</span></h3>
-<p><strong>200</strong> — same <code>data</code> shape as above (without <code>extractedName</code>); <strong>404</strong> if none uploaded yet.</p>
-
-<h3><span class="method patch">PATCH</span>/driver-documents <span class="lock">🔐 DRIVER — re-upload after rejection</span></h3>
-<p>form-data: <strong>at least one</strong> of the file fields above.</p>
-<pre>{
-  "success": true,
-  "message": "Driver documents updated successfully.",
-  "data": { "…": "…", "verificationStatus": "PENDING" }
-}</pre>
-<div class="note">Status auto-resets to <strong>PENDING</strong> for fresh admin review. <strong>400</strong> if no file provided.</div>
+<h3><span class="method get">GET</span>/driver-documents · <span class="method patch">PATCH</span>/driver-documents <span class="lock">DRIVER</span></h3>
+<p>PATCH takes <strong>at least one</strong> file field and resets status to <code>PENDING</code> for fresh admin review.</p>
 
 <h2>3. Driver profile</h2>
 <div class="warn">The "Driving Information" screen was <strong>removed from the design</strong> — the app should not show it. These endpoints keep working for backward compatibility; license details will come from the uploaded license image (OCR, later).</div>
 <ul>
-    <li><code>GET /drivers/profile</code> 🔐</li>
-    <li><code>POST /drivers/profile</code> / <code>PATCH /drivers/profile</code> 🔐 (unused by mobile)</li>
+    <li><code>GET /drivers/profile</code></li>
+    <li><code>POST /drivers/profile</code> / <code>PATCH /drivers/profile</code> (unused by mobile)</li>
 </ul>
 <pre>{
   "licenseNumber": "FKJ12345AB",
@@ -357,7 +194,7 @@
 
 <h2>4. Vehicles</h2>
 
-<h3><span class="method">POST</span>/vehicles <span class="lock">🔐 DRIVER — multipart/form-data</span></h3>
+<h3><span class="method">POST</span>/vehicles <span class="lock">DRIVER — multipart/form-data</span></h3>
 <table>
     <tr><th style="width:30%">Field</th><th>Rules</th></tr>
     <tr><td><code>brand</code></td><td>required</td></tr>
@@ -375,48 +212,43 @@
   "data": {
     "id": "77aa…",
     "driverId": "8d2e…",
-    "brand": "Toyota",
-    "model": "Corolla",
-    "year": 2021,
-    "color": "Silver",
-    "plateNumber": "KJA123AB",
-    "vehicleType": "SEDAN",
-    "seatCapacity": 4,
+    "brand": "Toyota", "model": "Corolla", "year": 2021,
+    "color": "Silver", "plateNumber": "KJA123AB",
+    "vehicleType": "SEDAN", "seatCapacity": 4,
     "verificationStatus": "PENDING",
     "frontImage": "https://res.cloudinary.com/…/front.jpg",
-    "rearImage": null,
-    "leftImage": null,
-    "rightImage": null,
-    "interiorImage": null
+    "rearImage": null, "leftImage": null, "rightImage": null, "interiorImage": null
   }
 }</pre>
-<div class="note">Admin must APPROVE the vehicle too — until then onboarding-status returns <code>ADD_VEHICLE</code>.</div>
+<div class="note">Admin must APPROVE the vehicle — until then onboarding-status returns <code>ADD_VEHICLE</code>.</div>
 
-<h3><span class="method get">GET</span>/vehicles &nbsp;·&nbsp; <span class="method get">GET</span>/vehicles/:id <span class="lock">🔐</span></h3>
-<p>List is ownership-scoped.</p>
+<h3>Inspection — required before creating a ride</h3>
+<pre>POST   /inspections/:vehicleId   multipart/form-data
+       files: frontPhoto, rearPhoto, dashboardPhoto,
+              odometerPhoto, tyrePhoto, safetyEquipmentPhoto (all required)
+GET    /inspections/:vehicleId
+PATCH  /inspections/:vehicleId   (re-upload; resets status to PENDING)</pre>
+<p>Admin passes it with <code>PATCH /admin/inspections/:id</code> <code>{ "status": "PASSED" }</code>. Photos are stored in Cloudinary (<code>EcoRide/VehicleInspections</code>).</p>
 
-<h3><span class="method patch">PATCH</span>/vehicles/:id <span class="lock">🔐</span></h3>
-<p>Any body field optional; same photo file fields optional.</p>
-
-<h3><span class="method del">DELETE</span>/vehicles/:id <span class="lock">🔐</span></h3>
-<pre>{ "success": true, "message": "Vehicle deleted successfully." }</pre>
+<h3>Other vehicle endpoints</h3>
+<ul>
+    <li><code>GET /vehicles</code> · <code>GET /vehicles/:id</code> — list is ownership-scoped</li>
+    <li><code>PATCH /vehicles/:id</code> — any body field optional, same photo fields optional</li>
+    <li><code>DELETE /vehicles/:id</code></li>
+</ul>
 
 <h2>5. Dashboard</h2>
 
-<h3><span class="method get">GET</span>/dashboard/driver <span class="lock">🔐 DRIVER</span></h3>
+<h3><span class="method get">GET</span>/dashboard/driver <span class="lock">DRIVER</span></h3>
 <p>Works even before a vehicle exists (<code>vehicle: null</code>, zeroed stats):</p>
 <pre>{
   "success": true,
   "message": "Driver dashboard retrieved successfully.",
   "data": {
     "profile": {
-      "firstName": "Ugo",
-      "lastName": "Obi",
-      "fullName": "Ugo Obi",
-      "email": "ugo@example.com",
-      "profilePicture": null,
-      "verified": true,
-      "rating": 4.6
+      "firstName": "Ugo", "lastName": "Obi",
+      "fullName": "Ugo Obi", "email": "ugo@example.com",
+      "profilePicture": null, "verified": true, "rating": 4.6
     },
     "vehicle": null,
     "wallet": { "balance": 0, "todayEarnings": 0, "currency": "NGN" },
@@ -431,45 +263,151 @@
   }
 }</pre>
 
-<h2>6. Wallet <span class="lock">🔐 — DRIVER allowed</span></h2>
+<h2>6. Wallet, Bank Details &amp; Withdraw (token required)</h2>
+
+<h3><span class="method get">GET</span>/wallets</h3>
+<pre>{ "data": { "id": "…", "balance": 1200, "currency": "NGN" } }</pre>
+
+<h3><span class="method get">GET</span>/wallets/transactions — Transaction History screen</h3>
+<pre>{ "data": [
+    { "id": "…", "amount": "1200.00", "type": "TRIP_EARNING", "transactionType": "CREDIT", "description": "Trip earnings for Ride 32dd1049-…" },
+    { "id": "…", "amount": "500.00",  "type": "WITHDRAWAL",   "transactionType": "DEBIT",  "description": "Withdrawal paid to GTBank ******6789" },
+    { "id": "…", "amount": "5000.00", "type": "TOP_UP",       "transactionType": "CREDIT", "description": "Wallet funded successfully" }
+] }</pre>
+<p>Types: <code>TOP_UP</code> <code>BOOKING_PAYMENT</code> <code>TRIP_EARNING</code> <code>WITHDRAWAL</code> <code>REFUND</code> <code>COMMISSION</code>. The design's filter tabs (All / Earnings / Withdrawal / Bonus) are client-side filters on <code>type</code>.</p>
+
+<h3>Bank Details screen</h3>
+<h4><span class="method">POST</span>/bank-accounts</h4>
+<pre>{ "bankName": "GTBank", "accountNumber": "0123456789", "accountName": "Ola Wale" }</pre>
+<pre>{
+  "success": true,
+  "message": "Bank account added successfully.",
+  "data": {
+    "id": "…", "bankName": "GTBank",
+    "accountNumber": "0123456789",
+    "accountName": "Ola Wale", "isDefault": true
+  }
+}</pre>
+<p>The first account saved becomes the default withdrawal target.</p>
 <ul>
-    <li><code>GET /wallets</code> → <code>{ "data": { "id": "…", "balance": 12500, "currency": "NGN" } }</code></li>
-    <li><code>GET /wallets/transactions</code> → <code>{ "data": [ { "id": "…", "type": "CREDIT", "amount": 2500, "…": "…" } ] }</code></li>
+    <li><code>GET /bank-accounts</code> — list saved accounts</li>
+    <li><code>DELETE /bank-accounts/:id</code> — remove an account</li>
+    <li><strong>400</strong> if the account number is not 10 digits.</li>
 </ul>
 
-<h2>7. Earnings <span class="lock">🔐 DRIVER</span></h2>
+<h3>Withdraw</h3>
+<h4><span class="method">POST</span>/wallets/withdraw</h4>
+<pre>{ "amount": 500, "bankAccountId": "…" }   // bankAccountId optional — defaults to the default account</pre>
+<pre>{
+  "success": true,
+  "message": "Withdrawal successful.",
+  "data": {
+    "amount": 500,
+    "bank": { "bankName": "GTBank", "accountNumber": "0123456789", "accountName": "Ola Wale" },
+    "balance": 700
+  }
+}</pre>
+<ul>
+    <li>Debits the wallet immediately and records a <code>WITHDRAWAL</code> transaction ("Paid to {bank} ****last4") plus a "Withdrawal Successful" notification.</li>
+    <li><strong>400</strong> "Minimum withdrawal is 100." · <strong>400</strong> "Insufficient wallet balance." · <strong>400</strong> "Add a bank account first."</li>
+    <li>Transfers are simulated for now — a real payout gateway slots in behind the same endpoint later.</li>
+</ul>
+
+<h3>Add Money (funding)</h3>
+<pre>POST /payments/initialize   { "amount": 5000, "paymentMethod": "CARD", "paymentType": "WALLET_TOPUP" }</pre>
+<p>Returns a <code>reference</code>; the gateway callback (or, in testing, an admin's <code>POST /payments/mock-callback/:reference</code>) credits the wallet and records a <code>TOP_UP</code> transaction.</p>
+
+<h2>7. Earnings <span class="lock">DRIVER</span></h2>
 <ul>
     <li><code>GET /driver/earnings</code></li>
     <li><code>GET /driver/earnings/history</code></li>
     <li><code>GET /driver/earnings/summary</code></li>
 </ul>
 
-<h2>8. Notifications <span class="lock">🔐 — any role</span></h2>
+<h2>8. Notifications (token required)</h2>
 <ul>
-    <li><code>GET /notifications</code></li>
-    <li><code>PATCH /notifications/read-all</code></li>
-    <li><code>PATCH /notifications/:id/read</code></li>
-    <li><code>DELETE /notifications/:id</code></li>
+    <li><code>GET /notifications</code> · <code>PATCH /notifications/read-all</code> · <code>PATCH /notifications/:id/read</code> · <code>DELETE /notifications/:id</code></li>
 </ul>
-<div class="note">Approval/rejection of documents and vehicles arrives here — poll this (or re-check onboarding-status) while on the <code>AWAIT_VERIFICATION</code> screen.</div>
+<div class="note">Approval/rejection of documents and vehicles, new booking requests, accept/reject decisions, driver-arrived, ride started and payment movements all arrive here.</div>
 
 <h2>9. Ratings</h2>
 <table>
     <tr><th style="width:46%">Endpoint</th><th>Who</th><th>Notes</th></tr>
-    <tr><td><code>POST /ratings/passenger/:bookingId</code> 🔐</td><td>Driver rates a passenger</td><td><code>{ "rating": 5, "comment": "Great passenger" }</code></td></tr>
-    <tr><td><code>GET /ratings/me</code> 🔐</td><td>Driver</td><td>All ratings received</td></tr>
-    <tr><td><code>GET /ratings/driver/:driverId</code> 🌐</td><td>Public</td><td>Driver's public rating</td></tr>
+    <tr><td><code>POST /ratings/passenger/:bookingId</code></td><td>Driver rates a passenger</td><td><code>{ "rating": 5, "comment": "Great passenger" }</code></td></tr>
+    <tr><td><code>GET /ratings/me</code></td><td>Driver</td><td>All ratings received</td></tr>
+    <tr><td><code>GET /ratings/driver/:driverId</code> (public)</td><td>Anyone</td><td>Driver's public rating</td></tr>
 </table>
 
-<h2>10. Trips</h2>
-<div class="warn"><strong>NOT CURRENTLY MOUNTED.</strong> The driver actions exist in code (<code>PATCH /trips/:id/accept</code>, <code>/reject</code>, <code>/arrive</code>, <code>/start</code>, <code>/complete</code>) but <code>trip.routes.js</code> is imported in <code>app.js</code> and never mounted — no <code>/api/v1/trips</code> URL works right now. Do <strong>not</strong> build against these until the router is mounted.</div>
+<h2>10. Rides <span class="lock">DRIVER</span></h2>
+
+<h3><span class="method">POST</span>/rides — Create Ride screen</h3>
+<pre>{
+  "vehicleId": "bd001c9b-…",             // APPROVED vehicle with a PASSED inspection
+  "pickupLocation": "Lekki Phase 1, Lagos",
+  "pickupLatitude": 6.4392, "pickupLongitude": 3.4712,
+  "destination": "Victoria Island, Lagos",
+  "destinationLatitude": 6.4281, "destinationLongitude": 3.4219,
+  "departureTime": "2026-11-21T07:30:00.000Z",
+  "availableSeats": 4,
+  "pricePerSeat": 1200,
+  "allowRecurringBooking": false          // optional
+}</pre>
+<pre>{
+  "success": true,
+  "message": "Ride created successfully.",
+  "data": {
+    "id": "32dd1049-…",
+    "rideCode": "471403554",              // short display ID (design: 123456789)
+    "status": "SCHEDULED",
+    "availableSeats": 4,
+    "remainingSeats": 4,
+    "pricePerSeat": "1200.00",
+    "departureTime": "2026-11-21T07:30:00.000Z",
+    "cancelReason": null,
+    "driverArrivedAt": null
+  }
+}</pre>
+
+<h3>Ride lifecycle (driver actions)</h3>
+<table>
+    <tr><th style="width:40%">Endpoint</th><th>Effect</th></tr>
+    <tr><td><code>PATCH /rides/:id/arrive</code></td><td>Marks arrival; passenger gets "Driver Arrived" and acknowledges via their booking</td></tr>
+    <tr><td><code>PATCH /rides/:id/start</code></td><td>Status → <code>ONGOING</code></td></tr>
+    <tr><td><code>PATCH /rides/:id/complete</code></td><td>Status → <code>COMPLETED</code>; each accepted passenger's wallet is debited the fare, the driver's wallet is credited the total, both notified</td></tr>
+    <tr><td><code>PATCH /rides/:id/cancel</code></td><td>Body <code>{ "reason": "Passenger requested" }</code> (free text, optional) — status → <code>CANCELLED</code>, <code>cancelReason</code> stored, all PENDING/ACCEPTED bookings cancelled and passengers notified</td></tr>
+    <tr><td><code>PATCH /rides/:id/location</code></td><td>Live location — <code>{ "latitude": 6.44, "longitude": 3.42 }</code></td></tr>
+    <tr><td><code>GET /rides/:id/location</code></td><td>Passenger polls driver's live location</td></tr>
+</table>
+
+<h3>Other ride endpoints</h3>
+<ul>
+    <li><code>GET /rides/history/me</code> — the driver's rides (dashboard list)</li>
+    <li><code>GET /rides/history</code> — ride history</li>
+    <li><code>GET /rides/:id</code> — detail (recomputes remaining seats for the requested travel date)</li>
+    <li><code>PATCH /rides/:id</code> — edit trip (any create field optional)</li>
+    <li><code>DELETE /rides/:id</code></li>
+</ul>
+<div class="note">A stray or malformed ID on any <code>/rides/:id</code> route returns <code>400 "Invalid ride ID."</code>.</div>
+
+<h2>11. Bookings</h2>
+<h3><span class="method get">GET</span>/bookings/driver <span class="lock">DRIVER — Received Booking screen</span></h3>
+<p>Returns bookings across the driver's rides; filter client-side by <code>bookingStatus</code> for the Pending / Confirmed / Declined tabs. Any PENDING booking older than <strong>15 minutes</strong> is auto-cancelled ("Expired — driver did not respond in time") and the passenger is notified — the design's "Expires in 03:54" countdown runs from <code>createdAt</code>.</p>
+
+<h3>Driver decisions</h3>
+<table>
+    <tr><th style="width:40%">Endpoint</th><th>Effect</th></tr>
+    <tr><td><code>PATCH /bookings/:id/accept</code></td><td><code>PENDING</code> → <code>ACCEPTED</code>; passenger notified "Booking Accepted"</td></tr>
+    <tr><td><code>PATCH /bookings/:id/reject</code></td><td>Body <code>{ "reason": "…" }</code> — <code>PENDING</code> → <code>REJECTED</code>; passenger notified</td></tr>
+</table>
+
+<div class="note">Seats are held when the passenger books (<code>remainingSeats</code> drops). If a ride is cancelled, held seats are released. Wallet balances move at ride completion, not booking.</div>
 
 <h2>Generic error shape</h2>
 <pre>{ "success": false, "message": "…" }   // 422 validation · 4xx client · 5xx server</pre>
 
 <div class="footer">
-    TheRide (formerly EcoRide) — Driver API Reference · Generated Nov 14, 2026 ·
-    🔐 = requires <code>Authorization: Bearer &lt;token&gt;</code> · 🌐 = public
+    TheRide (formerly EcoRide) — Driver API Reference · Nov 20, 2026 ·
+    Endpoints marked "(token required)" need <code>Authorization: Bearer &lt;token&gt;</code> · Public endpoints are noted as such
 </div>
 
 </div>

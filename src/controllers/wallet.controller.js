@@ -1,6 +1,7 @@
 import {
     getWalletService,
     getWalletTransactionsService,
+    withdrawFromWalletService,
 } from "../services/wallet.service.js";
 
 import { successResponse } from "../utils/response.js";
@@ -52,6 +53,35 @@ export const getWalletTransactions = async (
             200,
             "Wallet transactions retrieved successfully.",
             transactions
+        );
+
+    } catch (error) {
+
+        next(error);
+
+    }
+
+};
+
+export const withdraw = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const result =
+            await withdrawFromWalletService(
+                req.user.id,
+                req.body
+            );
+
+        return successResponse(
+            res,
+            200,
+            "Withdrawal successful.",
+            result
         );
 
     } catch (error) {

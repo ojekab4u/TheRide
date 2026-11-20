@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -26,7 +26,7 @@
     .warn { background:var(--warn-bg); border-left:4px solid var(--warn-border); padding:8px 12px; margin:8px 0 14px; font-size:9.5pt; break-inside:avoid; }
     ul { margin:4px 0 10px; padding-left:20px; } li { margin:2px 0; }
     .footer { margin-top:30px; padding-top:10px; border-top:1px solid var(--border); color:var(--muted); font-size:8.5pt; }
-    @media print { body { font-size:10pt; } .page { padding:0; max-width:none; } h2 { break-after:avoid; } pre, table, .note, .warn { break-inside:avoid; } }
+    @media print { body { font-size:10pt; } .page { padding:0; max-width:none; } h2, h3 { break-after:avoid; } pre, table, .note, .warn { break-inside:avoid; } }
 </style>
 </head>
 <body>
@@ -37,13 +37,13 @@
     <div class="meta">
         <strong>Base URL:</strong> <code>http://localhost:3000/api/v1</code> &nbsp;·&nbsp;
         <strong>Auth:</strong> <code>Authorization: Bearer &lt;token&gt;</code> &nbsp;·&nbsp;
-        <strong>Version:</strong> Nov 14, 2026
+        <strong>Version:</strong> Nov 20, 2026
     </div>
 </div>
 
 <h2>Journey order</h2>
 <pre>Register → Verify email → Login → Onboarding-status (drives every screen)
-→ Complete profile → Dashboard → Bookings / Trips / Wallet / Ratings</pre>
+→ Complete profile → Dashboard → Fund wallet → Find ride → Book → Ride</pre>
 
 <p><strong><code>GET /auth/onboarding-status</code> — <code>nextStep</code> values for passengers:</strong></p>
 <table>
@@ -58,7 +58,7 @@
 <ul>
     <li><code>role</code> is <code>"PASSENGER"</code>; <code>phoneNumber</code> is required; names optional.</li>
     <li>No <code>driverId</code> — login with <code>identifier</code> (email or phone).</li>
-    <li>Password reset email contains the <strong>4-digit code only</strong> (no web link).</li>
+    <li>Password reset email contains the <strong>4-digit code only</strong> (no web link): forgot-password → verify-reset-code (returns a <code>resetToken</code>) → <code>POST /auth/reset-password/:resetToken</code> with the new passwords.</li>
 </ul>
 
 <h3><span class="method">POST</span>/auth/register</h3>
@@ -79,50 +79,34 @@
   "lastName": "Nwosu"
 }</pre>
 
-<h3><span class="method">POST</span>/otp/verify-email</h3>
-<pre>{ "email": "ada@example.com", "code": "4821" }</pre>
-<p>Resend: <code>POST /otp/resend-email</code> <code>{ "email": "…" }</code></p>
-
-<h3><span class="method">POST</span>/auth/login</h3>
-<pre>{ "identifier": "ada@example.com", "password": "Passw0rd!" }</pre>
+<h3><span class="method">POST</span>/otp/verify-email &nbsp;·&nbsp; <span class="method">POST</span>/auth/login</h3>
+<pre>{ "email": "ada@example.com", "code": "4821" }
+{ "identifier": "ada@example.com", "password": "Passw0rd!" }</pre>
 <pre>{
   "success": true,
   "message": "Login successful.",
   "token": "eyJhbGciOi…",
   "user": {
-    "id": "4b1e…",
-    "email": "ada@example.com",
-    "phoneNumber": "08181234567",
-    "role": "PASSENGER",
-    "profilePicture": null,
-    "emailVerified": true,
-    "phoneVerified": false,
-    "isVerified": false,
-    "status": "ACTIVE",
-    "lastLogin": "2026-11-14T09:12:44.000Z",
-    "firstName": "Ada",
-    "lastName": "Nwosu"
+    "id": "4b1e…", "email": "ada@example.com",
+    "phoneNumber": "08181234567", "role": "PASSENGER",
+    "profilePicture": null, "emailVerified": true,
+    "phoneVerified": false, "isVerified": false,
+    "status": "ACTIVE", "lastLogin": "2026-11-20T09:12:44.000Z",
+    "firstName": "Ada", "lastName": "Nwosu"
   }
 }</pre>
-
-<h3>Password reset — mobile flow</h3>
-<pre>POST /auth/forgot-password      { "email": "ada@example.com" }
-POST /auth/verify-reset-code    { "email": "ada@example.com", "code": "1550" }
-                                → { "data": { "resetToken": "9f2c…" } }
-POST /auth/reset-password/9f2c… { "newPassword": "N3wPassw0rd!", "confirmPassword": "N3wPassw0rd!" }</pre>
-<p>The code is consumed at the verify step; the app holds <code>resetToken</code> in memory for the final call.</p>
 
 <h3>Other auth endpoints</h3>
 <table>
     <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
-    <tr><td><code>GET /auth/onboarding-status</code> 🔐</td><td>See table above</td></tr>
-    <tr><td><code>PATCH /auth/change-password</code> 🔐</td><td><code>{ "currentPassword": "…", "newPassword": "…" }</code></td></tr>
-    <tr><td><code>POST /auth/logout</code> 🔐</td><td>No body</td></tr>
+    <tr><td><code>GET /auth/onboarding-status</code></td><td>See table above</td></tr>
+    <tr><td><code>PATCH /auth/change-password</code></td><td><code>{ "currentPassword": "…", "newPassword": "…" }</code></td></tr>
+    <tr><td><code>POST /auth/logout</code></td><td>No body</td></tr>
 </table>
 
 <h2>2. Passenger profile</h2>
 
-<h3><span class="method">POST</span>/passengers/profile <span class="lock">🔐 PASSENGER — completes onboarding</span></h3>
+<h3><span class="method">POST</span>/passengers/profile <span class="lock">PASSENGER — completes onboarding</span></h3>
 <pre>{
   "gender": "FEMALE",              // MALE | FEMALE | OTHER — required
   "dateOfBirth": "1998-04-12",     // required, ISO date
@@ -133,58 +117,116 @@ POST /auth/reset-password/9f2c… { "newPassword": "N3wPassw0rd!", "confirmPassw
 <pre>{ "success": true, "message": "Passenger profile saved successfully.", "data": { "…": "…" } }</pre>
 <p>Calling this sets <code>profileCompleted</code> — onboarding-status then returns <code>DASHBOARD</code>.</p>
 
-<h3><span class="method get">GET</span>/passengers/profile &nbsp;·&nbsp; <span class="method patch">PATCH</span>/passengers/profile <span class="lock">🔐</span></h3>
+<h3><span class="method get">GET</span>/passengers/profile &nbsp;·&nbsp; <span class="method patch">PATCH</span>/passengers/profile</h3>
 <p>All fields optional on PATCH.</p>
 
-<h3><span class="method">POST</span>/passengers/emergency-contact <span class="lock">🔐</span></h3>
+<h3><span class="method">POST</span>/passengers/emergency-contact</h3>
 <pre>{ "fullName": "Chidi Nwosu", "phoneNumber": "08099998888", "relationship": "Brother" }</pre>
 
 <h2>3. Passenger documents <span class="lock">— multipart/form-data</span></h2>
 <table>
     <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
-    <tr><td><code>POST /passenger-documents</code> 🔐</td><td>File fields: <code>nationalIdFront</code>, <code>nationalIdBack</code>, <code>selfie</code></td></tr>
-    <tr><td><code>GET /passenger-documents</code> 🔐</td><td>Retrieve uploaded document URLs</td></tr>
-    <tr><td><code>PATCH /passenger-documents</code> 🔐</td><td>Re-upload; any of the file fields</td></tr>
+    <tr><td><code>POST /passenger-documents</code></td><td>File fields: <code>nationalIdFront</code>, <code>nationalIdBack</code>, <code>selfie</code></td></tr>
+    <tr><td><code>GET /passenger-documents</code></td><td>Retrieve uploaded document URLs</td></tr>
+    <tr><td><code>PATCH /passenger-documents</code></td><td>Re-upload; any of the file fields</td></tr>
 </table>
 <div class="warn">Passenger document review is not part of the current flow — no admin screen consumes these yet. Uploads are stored but nothing gates on them.</div>
 
 <h2>4. Dashboard</h2>
-<h3><span class="method get">GET</span>/dashboard/passenger <span class="lock">🔐 PASSENGER</span></h3>
+<h3><span class="method get">GET</span>/dashboard/passenger <span class="lock">PASSENGER</span></h3>
 <pre>{ "success": true, "message": "Passenger dashboard retrieved successfully.", "data": { "…": "…" } }</pre>
 
-<h2>5. Wallet 🔐</h2>
+<h2>5. Wallet, funding &amp; bank accounts</h2>
 <ul>
-    <li><code>GET /wallets</code> → <code>{ "data": { "id": "…", "balance": 0, "currency": "NGN" } }</code></li>
-    <li><code>GET /wallets/transactions</code></li>
+    <li><code>GET /wallets</code> → <code>{ "data": { "id": "…", "balance": 3800, "currency": "NGN" } }</code></li>
+    <li><code>GET /wallets/transactions</code> — wallet movements (types: <code>TOP_UP</code> <code>BOOKING_PAYMENT</code> <code>TRIP_EARNING</code> <code>WITHDRAWAL</code> <code>REFUND</code> <code>COMMISSION</code>)</li>
 </ul>
 
-<h2>6. Ratings</h2>
+<h3>Fund wallet (required before booking)</h3>
+<pre>POST /payments/initialize   { "amount": 5000, "paymentMethod": "CARD", "paymentType": "WALLET_TOPUP" }</pre>
+<p>Returns a <code>reference</code>; the gateway callback credits the wallet. (In testing, an admin triggers <code>POST /payments/mock-callback/:reference</code>.)</p>
+
+<h3>Bank accounts &amp; withdraw</h3>
+<ul>
+    <li><code>POST /bank-accounts</code> <code>{ "bankName": "GTBank", "accountNumber": "0123456789", "accountName": "Ada Nwosu" }</code> — 10-digit account number; the first account saved becomes the default</li>
+    <li><code>GET /bank-accounts</code> · <code>DELETE /bank-accounts/:id</code></li>
+    <li><code>POST /wallets/withdraw</code> <code>{ "amount": 500 }</code> — debits the wallet, records a <code>WITHDRAWAL</code> transaction, notifies; minimum ₦100; optional <code>bankAccountId</code> targets a specific account</li>
+</ul>
+
+<h2>6. Find a ride &amp; book</h2>
+
+<h3><span class="method get">GET</span>/rides/search <span class="lock">PASSENGER — Find Ride screen</span></h3>
+<pre>GET /rides/search?pickup=Lekki&amp;destination=Victoria&amp;page=1&amp;limit=10</pre>
+<pre>{ "success": true, "data": { "rides": [ {
+    "id": "32dd1049-…",
+    "rideCode": "471403554",
+    "pickupLocation": "Lekki Phase 1, Lagos",
+    "destination": "Victoria Island, Lagos",
+    "departureTime": "2026-11-21T07:30:00.000Z",
+    "remainingSeats": 4,
+    "pricePerSeat": "1200.00",
+    "status": "SCHEDULED"
+} ] } }</pre>
+
+<h3><span class="method">POST</span>/bookings — Join a ride</h3>
+<pre>{
+  "rideId": "32dd1049-…",
+  "numberOfSeats": 1,
+  "travelDate": "2026-11-21",              // required for one-time bookings
+  "isRecurring": false,                    // optional; needs recurrenceDays/StartDate/EndDate
+  "recurrenceDays": ["MON","WED"],         // only when isRecurring = true
+  "recurrenceStartDate": "2026-11-23",
+  "recurrenceEndDate": "2026-12-23"
+}</pre>
+<pre>{
+  "success": true,
+  "message": "Booking created successfully.",
+  "data": {
+    "id": "334256ec-…",
+    "bookingReference": "ECR-1795200292709-190",
+    "bookingStatus": "PENDING",
+    "fare": "1200.00",
+    "numberOfSeats": 1,
+    "travelDate": "2026-11-21"
+  }
+}</pre>
+<ul>
+    <li>The ride must be <code>SCHEDULED</code> with enough remaining seats; duplicate active bookings are rejected.</li>
+    <li><strong>The wallet must hold at least the fare before booking</strong> — the fare is checked upfront and debited when the ride completes.</li>
+    <li>PENDING bookings expire automatically after <strong>15 minutes</strong> if the driver doesn't respond — the "Expires in 03:54" countdown runs from <code>createdAt</code>. An expired booking is notified as "Ride Request Expired".</li>
+</ul>
+
+<h3>Booking status flow (passenger side)</h3>
+<table>
+    <tr><th style="width:44%">Endpoint</th><th>Notes</th></tr>
+    <tr><td><code>GET /bookings</code></td><td>The passenger's bookings — "My Rides" list; filter by <code>bookingStatus</code> (PENDING / ACCEPTED / REJECTED / CANCELLED / COMPLETED)</td></tr>
+    <tr><td><code>GET /bookings/history</code></td><td>History view</td></tr>
+    <tr><td><code>GET /bookings/:id</code></td><td>Detail with ride, vehicle and driver info</td></tr>
+    <tr><td><code>PATCH /bookings/:id/acknowledge</code></td><td>Confirm the driver arrived — required before the trip can start</td></tr>
+    <tr><td><code>PATCH /bookings/:id/cancel</code></td><td>Body <code>{ "reason": "…" }</code> (optional) — held seats are released</td></tr>
+</table>
+<div class="note">After the driver completes the ride, the fare is debited from the wallet and both sides receive payment notifications.</div>
+
+<h2>7. Ratings</h2>
 <table>
     <tr><th style="width:46%">Endpoint</th><th>Notes</th></tr>
-    <tr><td><code>POST /ratings/driver/:bookingId</code> 🔐</td><td>Passenger rates a driver — <code>{ "rating": 5, "comment": "Smooth ride" }</code></td></tr>
-    <tr><td><code>GET /ratings/me</code> 🔐</td><td>All ratings received</td></tr>
-    <tr><td><code>GET /ratings/passenger/:passengerId</code> 🌐</td><td>Public</td></tr>
+    <tr><td><code>POST /ratings/driver/:bookingId</code></td><td>Passenger rates a driver — <code>{ "rating": 5, "comment": "Smooth ride" }</code></td></tr>
+    <tr><td><code>GET /ratings/me</code></td><td>All ratings received</td></tr>
+    <tr><td><code>GET /ratings/passenger/:passengerId</code> (public)</td><td>Public</td></tr>
 </table>
 
-<h2>7. Rides and trips — current state</h2>
-<div class="warn">
-    <code>GET /api/v1/rides</code> and <code>GET /api/v1/rides/search</code> are public (no auth). Trip request/action endpoints exist in code but <code>trip.routes.js</code> is not mounted in <code>app.js</code> — no <code>/api/v1/trips</code> URL works. Booking endpoints under <code>/api/v1/bookings</code> are wired for the corporate booking flow.
-</div>
-
-<h2>8. Notifications 🔐</h2>
+<h2>8. Notifications</h2>
 <ul>
-    <li><code>GET /notifications</code></li>
-    <li><code>PATCH /notifications/read-all</code></li>
-    <li><code>PATCH /notifications/:id/read</code></li>
-    <li><code>DELETE /notifications/:id</code></li>
+    <li><code>GET /notifications</code> · <code>PATCH /notifications/read-all</code> · <code>PATCH /notifications/:id/read</code> · <code>DELETE /notifications/:id</code></li>
 </ul>
+<div class="note">Booking decisions, driver arrival, ride start, expiry and payment movements all arrive here.</div>
 
 <h2>Generic error shape</h2>
 <pre>{ "success": false, "message": "…" }   // 422 validation · 4xx client · 5xx server</pre>
 
 <div class="footer">
-    TheRide (formerly EcoRide) — Passenger API Reference · Generated Nov 14, 2026 ·
-    🔐 = requires <code>Authorization: Bearer &lt;token&gt;</code> · 🌐 = public
+    TheRide (formerly EcoRide) — Passenger API Reference · Nov 20, 2026 ·
+    Endpoints marked "(token required)" or without a public note need <code>Authorization: Bearer &lt;token&gt;</code>
 </div>
 
 </div>

@@ -1,6 +1,10 @@
 import Wallet from "../models/wallet.model.js";
 import Payment from "../models/payment.model.js";
+import BankAccount from "../models/bankAccount.model.js";
+import WalletTransaction from "../models/WalletTransaction.model.js";
 import AppError from "../utils/AppError.js";
+import { createWalletTransaction } from "../utils/createWalletTransaction.js";
+import { createNotification } from "./notification.service.js";
 
 export const getWalletService = async (
     userId
@@ -30,19 +34,22 @@ export const getWalletTransactionsService = async (
     userId
 ) => {
 
-    const payments = await Payment.findAll({
+    // Transaction History screen lists wallet movements
+    // (trip earnings, withdrawals, top-ups, refunds)
+    const transactions =
+        await WalletTransaction.findAll({
 
-        where: {
-            userId,
-        },
+            where: {
+                userId,
+            },
 
-        order: [
-            ["createdAt", "DESC"],
-        ],
+            order: [
+                ["createdAt", "DESC"],
+            ],
 
-    });
+        });
 
-    return payments;
+    return transactions;
 
 };
 
@@ -112,3 +119,73 @@ export const debitWallet = async (
 
     return wallet;
 }
+
+export const withdrawFromWalletService = async (
+    userId,
+    { amount, bankAccountId }
+) => {
+
+    const MIN_WITHDRAWAL = 100;
+
+    if (Number(amount) < MIN_WITHDRAWAL) {
+        throw new AppError(
+            "Minimum withdrawal is ₦100.",
+            400
+        );
+    }
+
+    // Chosen account, or the default one
+    let account = bankAccountId
+        ? await BankAccount.findOne({
+              where: { id: bankAccountId, userId },
+          })
+        : (await BankAccount.findOne({
+              where: { userId, isDefault: true },
+          })) ||
+          (await BankAccount.findOne({
+              where: { userId },
+          }));
+
+    if (!account) {
+        throw new AppError(
+            "Add a bank account first.",
+            400
+        );
+    }
+
+    // Debits, and throws on insufficient balance
+    const wallet = await debitWallet(
+        userId,
+        amount
+    );
+
+    await createWalletTransaction({
+        wallet,
+        amount,
+        type: "WITHDRAWAL",
+        transactionType: "DEBIT",
+        description:
+            `Withdrawal paid to ${account.bankName} ` +
+            `••••${account.accountNumber.slice(-4)}`,
+    });
+
+    await createNotification({
+        userId,
+        title: "Withdrawal Successful",
+        message:
+            `₦${amount} has been sent to ` +
+            `${account.bankName} ${account.accountNumber}.`,
+        type: "WALLET",
+    });
+
+    return {
+        amount,
+        bank: {
+            bankName: account.bankName,
+            accountNumber: account.accountNumber,
+            accountName: account.accountName,
+        },
+        balance: Number(wallet.balance),
+    };
+
+};

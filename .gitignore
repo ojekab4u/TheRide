@@ -3,3 +3,6 @@ node_modules/
 ecoride_backup.dump.sql
 
 .env
+
+# multer temp files (photos move to Cloudinary)
+uploads/

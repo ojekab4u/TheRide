@@ -230,7 +230,49 @@ if ( numberOfSeats > availableSeats)
 
 };
 
+// Pending bookings expire after 15 minutes without a driver response
+const BOOKING_EXPIRY_MINUTES = 15;
+
+export const expireStaleBookingsService = async () => {
+
+    const cutoff = new Date(
+        Date.now() - BOOKING_EXPIRY_MINUTES * 60 * 1000
+    );
+
+    const stale = await Booking.findAll({
+        where: {
+            bookingStatus: "PENDING",
+            createdAt: { [Op.lt]: cutoff },
+        },
+    });
+
+    for (const booking of stale) {
+
+        booking.bookingStatus = "CANCELLED";
+        booking.cancelReason =
+            "Expired — driver did not respond in time.";
+        booking.cancelledAt = new Date();
+
+        await booking.save();
+
+        await createNotification({
+            userId: booking.passengerId,
+            title: "Ride Request Expired",
+            message:
+                "Your booking request expired because the driver did not respond in time.",
+            type: "BOOKING",
+            referenceId: booking.id,
+        });
+
+    }
+
+    return stale.length;
+
+};
+
 export const getBookingsService = async (user) => {
+
+    await expireStaleBookingsService();
 
     let where = {};
 
@@ -378,6 +420,8 @@ export const acceptBookingService = async (
     id
 ) => {
 
+    await expireStaleBookingsService();
+
     const booking =
         await Booking.findByPk(id);
 
@@ -466,6 +510,8 @@ export const getRideBookingsService = async (
 export const getDriverBookingsService = async (
     userId
 ) => {
+
+    await expireStaleBookingsService();
 
     const driver = await DriverProfile.findOne({
         where: { userId },
@@ -575,6 +621,8 @@ export const rejectBookingsService = async (
     bookingId,
     reason
 ) => {
+
+    await expireStaleBookingsService();
 
     // Find driver profile
     const driver = await DriverProfile.findOne({

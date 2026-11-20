@@ -13,7 +13,18 @@ export const getAllInspectionsForReviewService = async () => {
                 include: [
                     {
                         model: DriverProfile,
-                        include: [User],
+                        include: [
+                            {
+                                model: User,
+                                attributes: {
+                                    exclude: [
+                                        "password",
+                                        "passwordResetToken",
+                                        "passwordResetExpires",
+                                    ],
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -37,7 +48,18 @@ export const getInspectionForReviewService = async (
                         include: [
                             {
                                 model: DriverProfile,
-                                include: [User],
+                                include: [
+                            {
+                                model: User,
+                                attributes: {
+                                    exclude: [
+                                        "password",
+                                        "passwordResetToken",
+                                        "passwordResetExpires",
+                                    ],
+                                },
+                            },
+                        ],
                             },
                         ],
                     },

@@ -25,6 +25,11 @@ const BankAccount = sequelize.define(
             allowNull: false,
         },
 
+        userId: {
+            type: DataTypes.UUID,
+            allowNull: false,
+        },
+
         isDefault: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,

@@ -35,6 +35,14 @@ import {
 
 const router = express.Router();
 
+// All /:id routes expect a UUID — reject anything else cleanly
+router.param("id", (req, res, next, id) => {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        return res.status(400).json({ success: false, message: "Invalid ride ID." });
+    }
+    next();
+});
+
 router.post(
     "/",
     protect,
