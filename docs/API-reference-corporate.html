@@ -169,11 +169,34 @@
     <tr><td><code>PATCH /bookings/:id/cancel</code> · <code>/:id/accept</code> · <code>/:id/acknowledge</code> · <code>/:id/reject</code></td><td>Status transitions</td></tr>
 </table>
 
-<h2>6. Wallet 🔐</h2>
+<h2>6. Wallet, Bank Details &amp; Withdraw 🔐</h2>
 <ul>
-    <li><code>GET /wallets</code></li>
-    <li><code>GET /wallets/transactions</code></li>
+    <li><code>GET /wallets</code> → <code>{ "data": { "id": "…", "balance": 0, "currency": "NGN" } }</code></li>
+    <li><code>GET /wallets/transactions</code> — wallet movements; types: <code>TOP_UP</code> <code>BOOKING_PAYMENT</code> <code>TRIP_EARNING</code> <code>WITHDRAWAL</code> <code>REFUND</code> <code>COMMISSION</code></li>
 </ul>
+
+<h3>Fund wallet</h3>
+<pre>POST /payments/initialize   { "amount": 5000, "paymentMethod": "CARD", "paymentType": "WALLET_TOPUP" }</pre>
+<p>Returns a <code>reference</code>; the gateway callback credits the wallet and records a <code>TOP_UP</code> transaction.</p>
+
+<h3>Bank Details (company payout account)</h3>
+<ul>
+    <li><code>POST /bank-accounts</code> <code>{ "bankName": "GTBank", "accountNumber": "0123456789", "accountName": "Acme Ltd" }</code> — 10-digit account number; the first account saved becomes the default</li>
+    <li><code>GET /bank-accounts</code> · <code>DELETE /bank-accounts/:id</code></li>
+</ul>
+
+<h3>Withdraw</h3>
+<pre>POST /wallets/withdraw   { "amount": 500, "bankAccountId": "…" }   // bankAccountId optional — defaults to the default account</pre>
+<pre>{
+  "success": true,
+  "message": "Withdrawal successful.",
+  "data": {
+    "amount": 500,
+    "bank": { "bankName": "GTBank", "accountNumber": "0123456789", "accountName": "Acme Ltd" },
+    "balance": 4500
+  }
+}</pre>
+<p>Debits immediately, records a <code>WITHDRAWAL</code> transaction ("Paid to {bank} ****last4") and sends a "Withdrawal Successful" notification. Minimum ₦100; errors: <code>400 "Insufficient wallet balance."</code>, <code>400 "Add a bank account first."</code> Transfers are simulated for now — a real payout gateway slots in behind the same endpoint later.</p>
 
 <h2>7. Notifications 🔐</h2>
 <ul>
