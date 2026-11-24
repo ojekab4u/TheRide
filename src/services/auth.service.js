@@ -19,6 +19,7 @@ import CorporateProfile from "../models/corporateProfile.model.js";
 import DriverProfile from "../models/driver.model.js";
 import DriverDocument from "../models/driverDocument.model.js";
 import PassengerProfile from "../models/passengerProfile.model.js";
+import PassengerDocument from "../models/passengerDocument.model.js";
 import Vehicle from "../models/vehicle.model.js";
 
 export const registerUser = async (userData) => {
@@ -587,9 +588,32 @@ export const getOnboardingStatusService = async (userId) => {
             passengerProfile?.profileCompleted
         );
 
-        status.nextStep = passengerProfile?.profileCompleted
-            ? "DASHBOARD"
-            : "COMPLETE_PROFILE";
+        // Design flow: profile → ID documents (front/back + selfie)
+        // → admin review → dashboard
+        if (!passengerProfile || !passengerProfile.profileCompleted) {
+            status.nextStep = "COMPLETE_PROFILE";
+            return status;
+        }
+
+        const documents = await PassengerDocument.findOne({
+            where: {
+                passengerProfileId: passengerProfile.id,
+            },
+        });
+
+        status.documentsUploaded = Boolean(documents);
+        status.verificationStatus =
+            documents?.verificationStatus || null;
+
+        if (!documents) {
+            status.nextStep = "UPLOAD_DOCUMENTS";
+        } else if (documents.verificationStatus === "PENDING") {
+            status.nextStep = "AWAIT_VERIFICATION";
+        } else if (documents.verificationStatus === "REJECTED") {
+            status.nextStep = "REUPLOAD_DOCUMENTS";
+        } else {
+            status.nextStep = "DASHBOARD";
+        }
 
         return status;
     }

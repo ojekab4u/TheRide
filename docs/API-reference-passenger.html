@@ -43,15 +43,20 @@
 
 <h2>Journey order</h2>
 <pre>Register → Verify email → Login → Onboarding-status (drives every screen)
-→ Complete profile → Dashboard → Fund wallet → Find ride → Book → Ride</pre>
+→ Complete profile → Upload ID documents → Admin review
+→ [Rejected? Re-upload] → Dashboard → Fund wallet → Find ride → Book → Ride</pre>
 
 <p><strong><code>GET /auth/onboarding-status</code> — <code>nextStep</code> values for passengers:</strong></p>
 <table>
     <tr><th style="width:30%">nextStep</th><th>Meaning</th></tr>
     <tr><td><code>VERIFY_EMAIL</code></td><td>Enter the emailed code</td></tr>
     <tr><td><code>COMPLETE_PROFILE</code></td><td><code>POST /passengers/profile</code> has not been called yet</td></tr>
-    <tr><td><code>DASHBOARD</code></td><td>Profile completed — go to dashboard</td></tr>
+    <tr><td><code>UPLOAD_DOCUMENTS</code></td><td>Show "Verify your identity" screen (National ID front/back + selfie)</td></tr>
+    <tr><td><code>AWAIT_VERIFICATION</code></td><td>"Application Submitted — under review"</td></tr>
+    <tr><td><code>REUPLOAD_DOCUMENTS</code></td><td>Documents rejected — show upload screen again</td></tr>
+    <tr><td><code>DASHBOARD</code></td><td>Approved — go to dashboard</td></tr>
 </table>
+<div class="note">Phone-number (SMS) verification appears in the design but is not active yet — it needs the Termii sender ID approval. Email verification is the active channel.</div>
 
 <h2>1. Auth</h2>
 <p>Same endpoints as the driver flow. Differences only:</p>
@@ -123,14 +128,15 @@
 <h3><span class="method">POST</span>/passengers/emergency-contact</h3>
 <pre>{ "fullName": "Chidi Nwosu", "phoneNumber": "08099998888", "relationship": "Brother" }</pre>
 
-<h2>3. Passenger documents <span class="lock">— multipart/form-data</span></h2>
+<h2>3. Passenger documents <span class="lock">— multipart/form-data — required before the dashboard</span></h2>
 <table>
     <tr><th style="width:40%">Endpoint</th><th>Notes</th></tr>
     <tr><td><code>POST /passenger-documents</code></td><td>File fields: <code>nationalIdFront</code>, <code>nationalIdBack</code>, <code>selfie</code></td></tr>
-    <tr><td><code>GET /passenger-documents</code></td><td>Retrieve uploaded document URLs</td></tr>
-    <tr><td><code>PATCH /passenger-documents</code></td><td>Re-upload; any of the file fields</td></tr>
+    <tr><td><code>GET /passenger-documents</code></td><td>Retrieve uploaded document URLs + <code>verificationStatus</code></td></tr>
+    <tr><td><code>PATCH /passenger-documents</code></td><td>Re-upload after rejection; resets status to <code>PENDING</code></td></tr>
 </table>
-<div class="warn">Passenger document review is not part of the current flow — no admin screen consumes these yet. Uploads are stored but nothing gates on them.</div>
+<p>A platform admin approves with <code>PATCH /admin/passengers/:passengerProfileId</code> <code>{ "status": "APPROVED" }</code> (or REJECTED + <code>reason</code>). Until approved, onboarding-status returns <code>AWAIT_VERIFICATION</code> ("Application Submitted — under review").</p>
+<div class="note">The design's phone-number (SMS) verification and "Continue with Google" are not built yet — see the note in the journey section.</div>
 
 <h2>4. Dashboard</h2>
 <h3><span class="method get">GET</span>/dashboard/passenger <span class="lock">PASSENGER</span></h3>
